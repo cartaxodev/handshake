@@ -2,10 +2,11 @@
 
 pragma solidity ^0.8.17;
 
+import "hardhat/console.sol";
+
 contract FormaturaContract {
 
     //Members lists
-    mapping (address => Member) private _membersMap;
     Member[] private _membersList;
 
     //Financial rules
@@ -61,6 +62,7 @@ contract FormaturaContract {
         uint _value;
         uint _dueDate;     //block.timestamp() --- from unix epoch
         uint _paymentDate;
+        bool _paid;
     }
 
     struct Withdraw {
@@ -85,22 +87,22 @@ contract FormaturaContract {
 
     /* ------------------------------------ CUSTOM MODIFIERS ----------------------------------- */
 
-    modifier onlyMainAddress {
-        require(_membersMap[msg.sender]._mainAddress == msg.sender, 
+    modifier onlyMainAddress (uint8 memberIndex_) {
+        require(_membersList[memberIndex_]._mainAddress == msg.sender, 
             'Only the main address of a member can call this function');
         _;
     }
 
-    modifier onlySecondaryAddress (address payable mainAddress_) {
-        require (checkSecondaryAddress(mainAddress_, payable(msg.sender)), 
+    modifier onlySecondaryAddress (uint8 memberIndex_) {
+        require (checkSecondaryAddress(memberIndex_, payable(msg.sender)), 
             'Only an allowed secondary address of a member can call this function');
         _;
     }
 
-    modifier anyMemberAddress (address payable mainAddress_) {
+    modifier anyMemberAddress (uint8 memberIndex_) {
         require(
-            _membersMap[msg.sender]._mainAddress == msg.sender
-            || checkSecondaryAddress(mainAddress_, payable(msg.sender)),
+            _membersList[memberIndex_]._mainAddress == msg.sender
+            || checkSecondaryAddress(memberIndex_, payable(msg.sender)),
                 'Only the main address or an allowed secondary address of a member can call this function'
         );
         _;
@@ -112,8 +114,8 @@ contract FormaturaContract {
         _;
     }
 
-    modifier onlyCommitte {
-        require(_membersMap[msg.sender]._committeMember, 
+    modifier onlyCommitte (uint8 memberIndex_) {
+        require(_membersList[memberIndex_]._committeMember, 
             'Only committe members can call this function');
         _;
     }
@@ -122,7 +124,7 @@ contract FormaturaContract {
 
     /* Add a new member to the list of members */
     function addNewMember (Member memory newMember) private {
-        Member storage m = _membersMap[newMember._mainAddress];
+        Member storage m = _membersList.push();
         
         m._login = newMember._login;
         m._mainAddress = newMember._mainAddress;
@@ -133,17 +135,16 @@ contract FormaturaContract {
         for (uint i = 0; i < newMember._payments.length; i++) {
             m._payments.push(newMember._payments[i]);
         }
-
-        _membersList.push(m);
     }
     
 
     /* Checks if the secondary address is in the list of secondary addresses of the member */
-    function checkSecondaryAddress (address payable mainAddress_, address payable secondaryAddress_) private view returns (bool) {
+    function checkSecondaryAddress (uint8 memberIndex_, address payable secondaryAddress_) private view returns (bool) {
         bool allowed = false;
+        Member storage m = _membersList[memberIndex_];
 
-        for (uint i = 0; i < _membersMap[mainAddress_]._secondaryAddresses.length; i++) {
-            if (_membersMap[mainAddress_]._secondaryAddresses[i] == secondaryAddress_) {
+        for (uint i = 0; i < m._secondaryAddresses.length; i++) {
+            if (m._secondaryAddresses[i] == secondaryAddress_) {
                 allowed = true;
                 break;
             }
@@ -158,8 +159,10 @@ contract FormaturaContract {
     }
 
 
-    function getNextPendingPayment (address payable memberAddress_) internal view returns (Payment storage) {
-        Payment[] storage payments = _membersMap[memberAddress_]._payments;
+    function getNextPendingPayment (uint8 memberIndex_) internal view returns (Payment storage) {
+        
+        Member storage member = _membersList[memberIndex_];
+        Payment[] storage payments = member._payments;
 
         uint i;
 
@@ -172,7 +175,7 @@ contract FormaturaContract {
             }
         }
 
-        require(p._value > 0 && p._dueDate > 0, 'This member has not pending payments anymore');
+        require(p._paid == false, 'This member has not pending payments anymore');
 
         return payments[i];
     }
@@ -210,6 +213,22 @@ contract FormaturaContract {
 
     /* ----------------------------- PUBLIC VIEW FUNCTIONS -------------------------------------- */
 
+    function getMemberIndex (address payable memberAddress_) public view returns (uint8) {
+        uint8 i = 0;
+        bool found = false;
+
+        for (i = 0; i < _membersList.length; i++) {
+            if (_membersList[i]._mainAddress == memberAddress_) {
+                found = true;
+                break;
+            }
+        }
+
+        require(found == true, 'This address is not a main address of a member of this contract');
+
+        return i;
+    }
+
     function getContractBalance_ETH () public view returns (uint) {
         return address(this).balance;
     }
@@ -228,8 +247,7 @@ contract FormaturaContract {
                 }
             }
         }
-
-        //TODO: Incluir as subtrações dos withdrawals executados.
+        
         uint sumOfWithdrawals = 0;
 
         for (uint i; i < _executedWithdrawals.length; i++) {
@@ -256,19 +274,19 @@ contract FormaturaContract {
     }
 
 
-    function getNextPaymentDueDate (address payable memberAddress_) public view returns (uint) {
-        Payment memory nextPayment = getNextPendingPayment(memberAddress_);
+    function getNextPaymentDueDate (uint8 memberIndex_) public view returns (uint) {
+        Payment memory nextPayment = getNextPendingPayment(memberIndex_);
         return nextPayment._dueDate;
     }
 
 
-    function getRemainingDebt (address payable memberAddress_) public view returns (uint) {
-        Payment[] storage p = _membersMap[memberAddress_]._payments;
+    function getRemainingDebt (uint8 memberIndex_) public view returns (uint) {
+        Payment[] memory p = _membersList[memberIndex_]._payments;
 
         uint remainingValue = 0;
 
         for (uint i; i < p.length; i++) {
-            if (p[i]._paymentDate == 0) {
+            if (p[i]._paid == false) {
                 remainingValue += p[i]._value;
             }
         }
@@ -276,13 +294,13 @@ contract FormaturaContract {
     }
 
 
-    function getPaidValue (address payable memberAddress_) public view returns (uint) {
-        Payment[] storage p = _membersMap[memberAddress_]._payments;
+    function getPaidValue (uint8 memberIndex_) public view returns (uint) {
+        Payment[] memory p = _membersList[memberIndex_]._payments;
 
         uint paidValue = 0;
 
         for (uint i; i < p.length; i++) {
-            if (p[i]._paymentDate != 0) {
+            if (p[i]._paid == true) {
                 paidValue += p[i]._value;
             }
         }
@@ -310,60 +328,63 @@ contract FormaturaContract {
     /* ----------------------------- FUNCTIONS CALLED BY A SINGLE MEMBER ------------------------ */
 
 
-    function approveTheContract () public onlyMainAddress {
-        require(_membersMap[msg.sender]._contractApproved == false);
-        _membersMap[msg.sender]._contractApproved = true;
+    function approveTheContract (uint8 memberIndex_) public onlyMainAddress (memberIndex_) {
+        Member storage m = _membersList[memberIndex_];
+        require(m._contractApproved == false);
+        m._contractApproved = true;
     }
 
 
     /* Functon to add a secondary address to the list of secondary addresses of the message sender */
-    function addSecondaryAddress (address payable newAddress_) public onlyMainAddress {
-        _membersMap[msg.sender]._secondaryAddresses.push(newAddress_);
+    function addSecondaryAddress (uint8 memberIndex_, address payable newAddress_) public onlyMainAddress (memberIndex_) {
+        _membersList[memberIndex_]._secondaryAddresses.push(newAddress_);
     }
 
 
-    function changeMainAddress (address payable oldMainAddress_) public onlySecondaryAddress(oldMainAddress_) {
-        _membersMap[msg.sender] = _membersMap[oldMainAddress_];
-        _membersMap[msg.sender]._mainAddress = payable(msg.sender);
-        removeSecondaryAddress(_membersMap[msg.sender], payable(msg.sender));
-
-        _membersMap[oldMainAddress_] = _membersMap[address(0)]; // Pointing the old address to the member of zero address
+    function changeMainAddress (uint8 memberIndex_) public onlySecondaryAddress(memberIndex_) {
+        
+        Member storage m = _membersList[memberIndex_];
+        m._mainAddress = payable(msg.sender);
+        removeSecondaryAddress(m, payable(msg.sender));
 
     }
 
 
     /* --------------------------------- FINANCIAL TRANSACTIONS FUNCTIONS (ETH) ------------------------------ */
 
-    function payNextPayment_ETH (address payable mainAddress_) public payable anyMemberAddress(mainAddress_) coinETH {
-        Payment storage nextPayment = getNextPendingPayment(mainAddress_);
+    function payNextPayment_ETH (uint8 memberIndex_) public payable anyMemberAddress(memberIndex_) coinETH {
+        Payment storage nextPayment = getNextPendingPayment(memberIndex_);
         require(msg.value == nextPayment._value, 'The transaction value must be equal to the payment value');
         nextPayment._paymentDate = block.timestamp;
+        nextPayment._paid = true;
     }
     
-    function proposeWithdraw_ETH (uint value_, string memory objective_, address payable destination_) public onlyCommitte onlyMainAddress {
+    function proposeWithdraw_ETH (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
         
-        require(value_ <= _maxWithdrawValue, 'Withdraw value must be less than the maximum defined in this contract');
-        require(value_ <= getContractBalance_ETH());
+        require(value_ <= _maxWithdrawValue, 
+            'Withdraw value must be equal or less than the maximum defined in this contract');
+        require(value_ <= getContractBalance_ETH(), 
+            'Withdraw value must be equal or less than the contract balance');
 
         Withdraw storage newWithdraw = _proposedWithdrawals.push();
 
         newWithdraw._id = _withdrawalsCounter;
-        newWithdraw._proposer = _membersMap[msg.sender];
+        newWithdraw._proposer = _membersList[proposerIndex_];
         newWithdraw._value = value_;
         newWithdraw._objective = objective_;
         newWithdraw._destination = destination_;
 
-        newWithdraw._authorizations[0] = _membersMap[msg.sender];
+        newWithdraw._authorizations[0] = _membersList[proposerIndex_];
         newWithdraw._authorizationsCounter++;
         _withdrawalsCounter++;
     }
 
 
-    function authorizeWithdraw_ETH (uint id_) public onlyCommitte onlyMainAddress {
+    function authorizeWithdraw_ETH (uint8 authorizerIndex_, uint withdrawId_) public onlyCommitte(authorizerIndex_) onlyMainAddress(authorizerIndex_) {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
-            if (_proposedWithdrawals[i]._id == id_) {
-                _proposedWithdrawals[i]._authorizations[_proposedWithdrawals[i]._authorizationsCounter] = _membersMap[msg.sender];
+            if (_proposedWithdrawals[i]._id == withdrawId_) {
+                _proposedWithdrawals[i]._authorizations[_proposedWithdrawals[i]._authorizationsCounter] = _membersList[authorizerIndex_];
                 _proposedWithdrawals[i]._authorizationsCounter++;
 
                 if (_proposedWithdrawals[i]._authorizationsCounter >= _minCommitteMembersToWithdraw) {
@@ -376,17 +397,19 @@ contract FormaturaContract {
     }
 
 
-    function executeWithdraw_ETH (uint id_) public onlyCommitte onlyMainAddress {
+    function executeWithdraw_ETH (uint8 memberIndex_, uint withdrawId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
 
         uint i;
         Withdraw storage executedWithdraw;
 
         for (i = 0; i < _proposedWithdrawals.length; i++) {
 
-            if (_proposedWithdrawals[i]._id == id_ && _proposedWithdrawals[i]._authorized) {
+            Withdraw storage w = _proposedWithdrawals[i];
 
-                executedWithdraw = _proposedWithdrawals[i];
-                executedWithdraw._destination.transfer(_proposedWithdrawals[i]._value);
+            if (w._id == withdrawId_ && w._authorized) {
+
+                executedWithdraw = w;
+                executedWithdraw._destination.transfer(w._value);
                 executedWithdraw._executed = true;
                 executedWithdraw._executionTimestamp = block.timestamp;
 

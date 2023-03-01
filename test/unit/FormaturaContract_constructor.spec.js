@@ -1,25 +1,25 @@
 const chai = require('chai');
 const BN = require('bn.js');
 const { expect } = require('chai');
-const membersMock = require('./MembersMock.js');
+const membersMock = require('./mocks/MembersMock.js');
 
 // Enable and inject BN dependency
 chai.use(require('chai-bn')(BN));
 
-describe("FormaturaContractUnit's constructor Unit Test", function () {
+describe("FormaturaContract's constructor Unit Test", function () {
 
     before(async function () {
 
-        const members = await membersMock.getMembers();
+        const [members, ] = await membersMock.getMembers();
 
         FormaturaContract = await ethers.getContractFactory('FormaturaContract');
         formaturaContract = await FormaturaContract.deploy(members, 2, 1);
         //await formaturaContract.deployed();
     });
 
-    it('Should have 6 members', async function() {
+    it('Should have 5 members', async function() {
         const deployedMembers = await formaturaContract.getMembers();
-        expect( deployedMembers.length ).to.equal(6);
+        expect( deployedMembers.length ).to.equal(5);
     });
 
     it('Should have 3 committe members', async function() {
