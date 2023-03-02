@@ -16,6 +16,7 @@ contract FormaturaContract {
     uint private _maxWithdrawValue;
     Withdraw[] private _proposedWithdrawals;
     Withdraw[] private _executedWithdrawals;
+    bool private _contractApproved;
 
     //Rules for penalties (multas, etc)
     //TODO
@@ -59,7 +60,7 @@ contract FormaturaContract {
 
     struct Payment {
 
-        uint _value;
+        uint _value;   // <-- Must be different to zero
         uint _dueDate;     //block.timestamp() --- from unix epoch
         uint _paymentDate;
         bool _paid;
@@ -120,6 +121,11 @@ contract FormaturaContract {
         _;
     }
 
+    modifier contractApprovedForAll {
+        require(_contractApproved || updateContractApproval(), "This contract is not aproved by all members");
+        _;
+    }
+
     /* ------------------------------------  PRIVATE FUNCTIONS -------------------------------- */
 
     /* Add a new member to the list of members */
@@ -133,6 +139,7 @@ contract FormaturaContract {
         m._contractApproved = false;
 
         for (uint i = 0; i < newMember._payments.length; i++) {
+            require (newMember._payments[i]._value > 0, "All payments must have a value greater than zero");
             m._payments.push(newMember._payments[i]);
         }
     }
@@ -167,15 +174,17 @@ contract FormaturaContract {
         uint i;
 
         Payment memory p;
+        bool havePendingPayments = false;
 
         for (i = 0; i < payments.length; i++) {
-            if (payments[i]._paymentDate == 0) {
+            if (payments[i]._paid == false) {
                 p = payments[i];
+                havePendingPayments = true;
                 break;
             }
         }
 
-        require(p._paid == false, 'This member has not pending payments anymore');
+        require(havePendingPayments , 'This member has not pending payments anymore');
 
         return payments[i];
     }
@@ -262,7 +271,8 @@ contract FormaturaContract {
 
     }
 
-    function isContractApprovedByAllMembers () public view returns (bool) {
+    function updateContractApproval () public returns (bool) {
+
         bool approved = true;
         for (uint i = 0; i < _membersList.length; i++) {
             if (!_membersList[i]._contractApproved) {
@@ -270,7 +280,9 @@ contract FormaturaContract {
                 break;
             }
         }
+        _contractApproved = approved;
         return approved;
+        
     }
 
 
@@ -325,7 +337,7 @@ contract FormaturaContract {
     }
 
 
-    /* ----------------------------- FUNCTIONS CALLED BY A SINGLE MEMBER ------------------------ */
+    /* ----------------------------- FUNCTIONS TO MEMBER ACCOUNT MANAGEMENT ------------------------ */
 
 
     function approveTheContract (uint8 memberIndex_) public onlyMainAddress (memberIndex_) {
@@ -352,7 +364,7 @@ contract FormaturaContract {
 
     /* --------------------------------- FINANCIAL TRANSACTIONS FUNCTIONS (ETH) ------------------------------ */
 
-    function payNextPayment_ETH (uint8 memberIndex_) public payable anyMemberAddress(memberIndex_) coinETH {
+    function payNextPayment_ETH (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) coinETH {
         Payment storage nextPayment = getNextPendingPayment(memberIndex_);
         require(msg.value == nextPayment._value, 'The transaction value must be equal to the payment value');
         nextPayment._paymentDate = block.timestamp;
