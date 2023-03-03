@@ -5,13 +5,14 @@ exports.getMembers = async function() {
         {_value: 1, _dueDate: 2, _paymentDate: 0, _paid: false}
     ];
 
-    const [signer1, signer2, signer3, signer4, signer5, signer6] = await ethers.getSigners();
+    const [signer1, signer2, signer3, signer4, signer5, signer6, signer7, signer8] = await ethers.getSigners();
 
     const member1 = {
         signer: signer1,
+        secondarySigners: [signer7],
         _login: 'bob',
         _mainAddress: signer1.address,
-        _secondaryAddresses: [],
+        _secondaryAddresses: [signer7.address],
         _contractApproved: false,
         _committeMember: true,
         _payments: payments
@@ -19,9 +20,10 @@ exports.getMembers = async function() {
 
     const member2 = {
         signer: signer2,
+        secondarySigners: signer8,
         _login: 'alice',
         _mainAddress: signer2.address,
-        _secondaryAddresses: [],
+        _secondaryAddresses: [signer8.address],
         _contractApproved: true,
         _committeMember: true,
         _payments: payments

@@ -71,7 +71,7 @@ contract FormaturaContract {
         uint _id;
         Member _proposer;
         Member[] _authorizations;
-        uint _authorizationsCounter;
+        //uint _authorizationsCounter;
         uint _value;
         string _objective;
         address payable _destination;
@@ -372,11 +372,12 @@ contract FormaturaContract {
     }
     
     function proposeWithdraw_ETH (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
-        
-        require(value_ <= _maxWithdrawValue, 
-            'Withdraw value must be equal or less than the maximum defined in this contract');
+
         require(value_ <= getContractBalance_ETH(), 
             'Withdraw value must be equal or less than the contract balance');
+
+        require(value_ <= _maxWithdrawValue, 
+            'Withdraw value must be equal or less than the maximum defined in this contract');
 
         Withdraw storage newWithdraw = _proposedWithdrawals.push();
 
@@ -386,8 +387,8 @@ contract FormaturaContract {
         newWithdraw._objective = objective_;
         newWithdraw._destination = destination_;
 
-        newWithdraw._authorizations[0] = _membersList[proposerIndex_];
-        newWithdraw._authorizationsCounter++;
+        newWithdraw._authorizations.push(_membersList[proposerIndex_]);
+        //newWithdraw._authorizationsCounter++;
         _withdrawalsCounter++;
     }
 
@@ -396,10 +397,10 @@ contract FormaturaContract {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
-                _proposedWithdrawals[i]._authorizations[_proposedWithdrawals[i]._authorizationsCounter] = _membersList[authorizerIndex_];
-                _proposedWithdrawals[i]._authorizationsCounter++;
+                _proposedWithdrawals[i]._authorizations.push(_membersList[authorizerIndex_]);
+                //_proposedWithdrawals[i]._authorizationsCounter++;
 
-                if (_proposedWithdrawals[i]._authorizationsCounter >= _minCommitteMembersToWithdraw) {
+                if (_proposedWithdrawals[i]._authorizations.length >= _minCommitteMembersToWithdraw) {
                     _proposedWithdrawals[i]._authorized = true;
                 }
                 break;
@@ -420,6 +421,7 @@ contract FormaturaContract {
 
             if (w._id == withdrawId_ && w._authorized) {
 
+                require(w._value <= getContractBalance_ETH(), "This contract haven't enough balance to execute this transaction");
                 executedWithdraw = w;
                 executedWithdraw._destination.transfer(w._value);
                 executedWithdraw._executed = true;
