@@ -1,10 +1,14 @@
 const chai = require('chai');
 const { expect } = require('chai');
-const { loadFixture } = require('@nomicfoundation/hardhat-network-helpers');
+const { loadFixture, time } = require('@nomicfoundation/hardhat-network-helpers');
 const membersMock = require('./mocks/MembersMock.js');
 
 
 describe("FormaturaContract's financial methods Unit Test", function () {
+
+    /*******************
+        FIXTURES FUNCTIONS:
+    *******************/
 
     async function deployContractNotApprovedFixture () {
 
@@ -46,14 +50,57 @@ describe("FormaturaContract's financial methods Unit Test", function () {
                 cont++;
             }
         }
-
-        console.log(`Executed ${cont} payments in this fixture`);
         
         return { formaturaContract, members, notMember };
     }
 
+    async function proposedWithdrawalsFixture () {
+        const { formaturaContract, members, notMember } = await contractWithAllPaymentsDoneFixture();
 
-    context('METHOD: payNextPayment()', function () {
+        const bob = members[0];
+        const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+
+        await formaturaContract
+            .connect(bob.signer)
+            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 1", bob._mainAddress);
+
+        await formaturaContract
+            .connect(bob.signer)
+            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 2", bob._mainAddress);
+
+        await formaturaContract
+            .connect(bob.signer)
+            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 3", bob._mainAddress);
+
+        return { formaturaContract, members, notMember };
+    }
+
+    async function authorizedWithdrawalsFixture () {
+        const { formaturaContract, members, notMember } = await proposedWithdrawalsFixture();
+
+        const alice = members[1];
+        const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+
+        await formaturaContract
+            .connect(alice.signer)
+            .authorizeWithdraw_ETH(aliceIndex, 0);
+
+        await formaturaContract
+            .connect(alice.signer)
+            .authorizeWithdraw_ETH(aliceIndex, 1);
+        
+        await formaturaContract
+            .connect(alice.signer)
+            .authorizeWithdraw_ETH(aliceIndex, 2);
+
+        return { formaturaContract, members, notMember };
+    }
+
+
+    /*******************
+        CONTEXT: Unit tests for FormaturaContract.payNextPayent( ... )
+    *******************/
+    context('METHOD: payNextPayment( ... )', function () {
 
 
         it("Should revert because the contract is not aproved for all members yet", async function() {
@@ -79,17 +126,18 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
     
-            await formaturaContract
-                    .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 1});
-            
-            // console.log(result);
+            await expect( formaturaContract
+                .connect(bob.signer)
+                .payNextPayment_ETH(bobIndex, {value: 1})).to.changeEtherBalances(
+                    [bob.signer, formaturaContract],
+                    [-1, 1]
+                );
     
             const contractMembers = await formaturaContract.getMembers();
             const contractBob = contractMembers[bobIndex];
     
             expect(contractBob._payments[0]._paid).to.equal(true);
-            expect(contractBob._payments[0]._paymentDate).to.not.equal(0);
+            expect(contractBob._payments[0]._paymentDate).to.greaterThan(0).and.to.lessThanOrEqual(await time.latest());
             expect(contractBob._payments[1]._paid).to.equal(false);
     
             /* All the other members must to have all their payments still pending */
@@ -114,11 +162,12 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
     
-            await formaturaContract
+            await expect( formaturaContract
                     .connect(bob.secondarySigners[0])
-                    .payNextPayment_ETH(bobIndex, {value: 1});
-            
-            // console.log(result);
+                    .payNextPayment_ETH(bobIndex, {value: 1})).to.changeEtherBalances(
+                        [bob.secondarySigners[0], formaturaContract],
+                        [-1, 1]
+                    );
     
             const contractMembers = await formaturaContract.getMembers();
             const contractBob = contractMembers[bobIndex];
@@ -202,7 +251,10 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     });
 
 
-    context('METHOD: ProposeWithdraw()', function() {
+    /*******************
+        CONTEXT: Unit tests for FormaturaContract.proposeWithdraw( ... )
+    *******************/
+    context('METHOD: proposeWithdraw( ... )', function() {
 
         
         it("Should bob propose a withdraw", async function() {
@@ -213,9 +265,13 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
 
-            await formaturaContract
+            await expect( formaturaContract
                 .connect(bob.signer)
-                .proposeWithdraw_ETH(bobIndex, 5, "To spend with the music group", bob._mainAddress);
+                .proposeWithdraw_ETH(bobIndex, 5, "To spend with the music group", bob._mainAddress))
+                    .to.changeEtherBalances(
+                        [bob.signer, formaturaContract],
+                        [0, 0]
+                    );
 
             const withdrawals = await formaturaContract.getProposedWithdrawals();
 
@@ -225,48 +281,309 @@ describe("FormaturaContract's financial methods Unit Test", function () {
             expect(withdrawals[0]._value).to.equal(5);
             expect(withdrawals[0]._objective).to.equal("To spend with the music group");
             expect(withdrawals[0]._destination).to.equal(bob._mainAddress);
+            expect(withdrawals[0]._authorized).to.equal(false);
+            expect(withdrawals[0]._executed).to.equal(false);
+            expect(withdrawals[0]._executionTimestamp).to.equal(0);
+        });
+
+        it("Should revert because withdraw value is out of bounds", async function() {
+
+            const { members, formaturaContract } = await loadFixture(contractWithAllPaymentsDoneFixture);
+    
+            const bob = members[0];
+    
+            const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+    
+            await expect(formaturaContract
+                .connect(bob.signer)
+                .proposeWithdraw_ETH(bobIndex, 6, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the maximum defined in this contract");
+            
+            await expect(formaturaContract
+                .connect(bob.signer)
+                .proposeWithdraw_ETH(bobIndex, 12, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the contract balance");
+        
+        });
+    
+    
+        it("Should revert because withdraw value is out of bounds", async function() {
+    
+            const { members, formaturaContract } = await loadFixture(contractWithAllPaymentsDoneFixture);
+    
+            const michael = members[3];
+            const bob = members[0];
+    
+            const michaelIndex = await formaturaContract.getMemberIndex(michael._mainAddress);
+            const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+    
+            await expect(formaturaContract
+                .connect(michael.signer)
+                .proposeWithdraw_ETH(michaelIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only committe members can call this function");
+            
+            await expect(formaturaContract
+                .connect(michael.signer)
+                .proposeWithdraw_ETH(bobIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only the main address of a member can call this function");
+        
+        });
+    
+
+    });
+    
+
+    /*******************
+        CONTEXT: Unit tests for FormaturaContract.authorizeWithdraw( ... )
+    *******************/
+    context('METHOD: authorizeWithdraw( ... )', function() { 
+
+        it("Should alice authorize the two first withdrawals", async function () {
+
+            const { members, formaturaContract } = await loadFixture(proposedWithdrawalsFixture);
+
+            const alice = members[1];
+            const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+
+            let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+            
+            for (withdraw of proposedWithdrawals) {
+                expect(withdraw._authorized).to.equal(false);
+            }
+
+            expect (await formaturaContract
+                .connect(alice.signer)
+                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.changeEtherBalances(
+                    [alice.signer, formaturaContract],
+                    [0, 0]
+                );
+            
+            await formaturaContract.connect(alice.signer).authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[2]._id);
+
+            proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+
+            expect(proposedWithdrawals[0]._authorized).to.equal(true);
+            expect(proposedWithdrawals[1]._authorized).to.equal(false);
+            expect(proposedWithdrawals[0]._authorized).to.equal(true);
+
+            expect(proposedWithdrawals[0]._authorizations[1]._login).to.equal("alice");
+            expect(proposedWithdrawals[2]._authorizations[1]._login).to.equal("alice");
+            expect(proposedWithdrawals[1]._authorizations.length).to.equal(1);
+
+            expect(proposedWithdrawals[0]._authorized).to.equal(true);
+            expect(proposedWithdrawals[1]._authorized).to.equal(false);
+            expect(proposedWithdrawals[2]._authorized).to.equal(true);
+
+        });
+
+
+        it("Should revert because a member cannot authorize a withdraw twice", async function () {
+
+            const { members, formaturaContract } = await loadFixture(proposedWithdrawalsFixture);
+
+            const bob = members[0];
+            const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+
+            let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+
+            await expect(formaturaContract
+                .connect(bob.signer)
+                .authorizeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("A member cannot authorize a withdraw twice");
+            
+        });
+        
+
+        it("Should revert because michael is not a committe member", async function () {
+
+            const { members, formaturaContract } = await loadFixture(proposedWithdrawalsFixture);
+
+            const michael = members[3];
+            const alice = members[1];
+            const michaelIndex = await formaturaContract.getMemberIndex(michael._mainAddress);
+            const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+
+            let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+
+            await expect(formaturaContract
+                .connect(michael.signer)
+                .authorizeWithdraw_ETH(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
+            
+            await expect(formaturaContract
+                .connect(michael.signer)
+                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+            
+        });
+
+
+        it("Should revert because the function caller is not a member of this contract", async function () {
+
+            const { members, notMember, formaturaContract } = await loadFixture(proposedWithdrawalsFixture);
+
+            const alice = members[1];
+            const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+
+            let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+
+            await expect(formaturaContract
+                .connect(notMember.signer)
+                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+              
         });
 
     });
 
 
-    it("Should revert because withdraw value is out of bounds", async function() {
+    /*******************
+        CONTEXT: Unit tests for FormaturaContract.executeWithdraw( ... )
+    *******************/
+        context('METHOD: executeWithdraw( ... )', function() {
 
-        const { members, formaturaContract } = await loadFixture(contractWithAllPaymentsDoneFixture);
+            it("Should bob execute an authorized withdraw", async function () {
 
-        const bob = members[0];
+                const { members, formaturaContract } = await loadFixture(authorizedWithdrawalsFixture);
 
-        const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+                const bob = members[0];
+                const bobIndex = formaturaContract.getMemberIndex(bob._mainAddress);
 
-        await expect(formaturaContract
-            .connect(bob.signer)
-            .proposeWithdraw_ETH(bobIndex, 6, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the maximum defined in this contract");
-        
-        await expect(formaturaContract
-            .connect(bob.signer)
-            .proposeWithdraw_ETH(bobIndex, 12, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the contract balance");
+                let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+                let executedWithdrawals = await formaturaContract.getExecutedWithdrawals();
+
+                expect(proposedWithdrawals.length).to.equal(3);
+                expect(executedWithdrawals.length).to.equal(0);
+
+                /* EXECUTING THE LAST WITHDRAW OF THE LIST */
+                await expect (formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, 2)).to.changeEtherBalances(
+                        [bob.signer, formaturaContract],
+                        [5, -5]
+                    );
+
+                proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+                executedWithdrawals = await formaturaContract.getExecutedWithdrawals();
+
+                expect(proposedWithdrawals.length).to.equal(2);
+                expect(executedWithdrawals.length).to.equal(1);
+                
+                expect(executedWithdrawals[0]._id).to.equal(2);
+                expect(executedWithdrawals[0]._executed).to.equal(true);
+                expect(executedWithdrawals[0]._executionTimestamp).to.greaterThan(0).and.to.lessThanOrEqual(await time.latest());
+                
+                expect(proposedWithdrawals[0]._id).to.equal(0);
+                expect(proposedWithdrawals[0]._executed).to.equal(false);
+                expect(proposedWithdrawals[0]._executionTimestamp).to.equal(0);
+                expect(proposedWithdrawals[1]._id).to.equal(1);
+                expect(proposedWithdrawals[1]._executed).to.equal(false);
+                expect(proposedWithdrawals[1]._executionTimestamp).to.equal(0);
+
+
+                /* EXECUTING THE FIRST WITHDRAW OF THE LIST */
+                await expect (formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, 0)).to.changeEtherBalances(
+                        [bob.signer, formaturaContract],
+                        [5, -5]
+                    );
+
+                proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+                executedWithdrawals = await formaturaContract.getExecutedWithdrawals();
+
+                expect(proposedWithdrawals.length).to.equal(1);
+                expect(executedWithdrawals.length).to.equal(2);
+                
+                expect(executedWithdrawals[0]._id).to.equal(2);
+                expect(executedWithdrawals[0]._executed).to.equal(true);
+                expect(executedWithdrawals[0]._executionTimestamp).to.greaterThan(0).and.to.lessThanOrEqual(await time.latest());
+                expect(executedWithdrawals[1]._id).to.equal(0);
+                expect(executedWithdrawals[1]._executed).to.equal(true);
+                expect(executedWithdrawals[1]._executionTimestamp).to.greaterThan(0).and.to.lessThanOrEqual(await time.latest());
+                
+                expect(proposedWithdrawals[0]._id).to.equal(1);
+                expect(proposedWithdrawals[0]._executed).to.equal(false);
+                expect(proposedWithdrawals[0]._executionTimestamp).to.equal(0);
+
+            });
+
+
+            it("Should revert because there is not enough balance in this contract", async function () {
+
+                const { members, formaturaContract } = await loadFixture(authorizedWithdrawalsFixture);
     
-    });
-
-
-    it("Should revert because withdraw value is out of bounds", async function() {
-
-        const { members, formaturaContract } = await loadFixture(contractWithAllPaymentsDoneFixture);
-
-        const michael = members[3];
-        const bob = members[0];
-
-        const michaelIndex = await formaturaContract.getMemberIndex(michael._mainAddress);
-        const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
-
-        await expect(formaturaContract
-            .connect(michael.signer)
-            .proposeWithdraw_ETH(michaelIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only committe members can call this function");
-        
-        await expect(formaturaContract
-            .connect(michael.signer)
-            .proposeWithdraw_ETH(bobIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only the main address of a member can call this function");
+                const bob = members[0];
+                const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
     
-    });
+                let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+                
+                await formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id);
+                
+                await formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[1]._id)
+
+                await expect(formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[2]._id))
+                        .to.be.revertedWith("There is not enough balance in this contract to execute this transaction");
+                
+            });
+
+
+            it("Should revert because there is not enough balance in this contract", async function () {
+
+                const { members, formaturaContract } = await loadFixture(authorizedWithdrawalsFixture);
+    
+                const bob = members[0];
+                const bobIndex = await formaturaContract.getMemberIndex(bob._mainAddress);
+    
+                let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+                
+                await formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id);
+
+                await expect(formaturaContract
+                    .connect(bob.signer)
+                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id))
+                        .to.be.revertedWith("Proposed withdraw not found");
+                
+            });
+            
+    
+            it("Should revert because michael is not a committe member", async function () {
+    
+                const { members, formaturaContract } = await loadFixture(authorizedWithdrawalsFixture);
+    
+                const michael = members[3];
+                const alice = members[1];
+                const michaelIndex = await formaturaContract.getMemberIndex(michael._mainAddress);
+                const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+    
+                let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+    
+                await expect(formaturaContract
+                    .connect(michael.signer)
+                    .executeWithdraw_ETH(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
+                
+                await expect(formaturaContract
+                    .connect(michael.signer)
+                    .executeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                
+            });
+    
+    
+            it("Should revert because the function caller is not a member of this contract", async function () {
+    
+                const { members, notMember, formaturaContract } = await loadFixture(authorizedWithdrawalsFixture);
+    
+                const alice = members[1];
+                const aliceIndex = await formaturaContract.getMemberIndex(alice._mainAddress);
+    
+                let proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
+    
+                await expect(formaturaContract
+                    .connect(notMember.signer)
+                    .executeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                  
+            });
+
+        });
 
 });

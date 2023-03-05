@@ -8,6 +8,7 @@ contract FormaturaContract {
 
     //Members lists
     Member[] private _membersList;
+    uint private _membersCounter;
 
     //Financial rules
     AllowedCoins private _contractCoin;
@@ -50,6 +51,7 @@ contract FormaturaContract {
 
     struct Member {
 
+        uint _id; //This is a member ID valid only into the contract scope
         string _login;
         address payable _mainAddress;
         address payable[] _secondaryAddresses;
@@ -132,6 +134,7 @@ contract FormaturaContract {
     function addNewMember (Member memory newMember) private {
         Member storage m = _membersList.push();
         
+        m._id = _membersCounter++;
         m._login = newMember._login;
         m._mainAddress = newMember._mainAddress;
         m._secondaryAddresses = newMember._secondaryAddresses;
@@ -397,11 +400,19 @@ contract FormaturaContract {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
-                _proposedWithdrawals[i]._authorizations.push(_membersList[authorizerIndex_]);
+                
+                Withdraw storage withdraw = _proposedWithdrawals[i];
+                Member storage authorizer = _membersList[authorizerIndex_];
+
+                for (uint j = 0; j < withdraw._authorizations.length; j++) {
+                    require (withdraw._authorizations[j]._id != authorizer._id, "A member cannot authorize a withdraw twice");
+                }
+
+                withdraw._authorizations.push(authorizer);
                 //_proposedWithdrawals[i]._authorizationsCounter++;
 
-                if (_proposedWithdrawals[i]._authorizations.length >= _minCommitteMembersToWithdraw) {
-                    _proposedWithdrawals[i]._authorized = true;
+                if (withdraw._authorizations.length >= _minCommitteMembersToWithdraw) {
+                    withdraw._authorized = true;
                 }
                 break;
             }
@@ -413,37 +424,37 @@ contract FormaturaContract {
     function executeWithdraw_ETH (uint8 memberIndex_, uint withdrawId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
 
         uint i;
-        Withdraw storage executedWithdraw;
+        bool executed = false;
 
         for (i = 0; i < _proposedWithdrawals.length; i++) {
 
             Withdraw storage w = _proposedWithdrawals[i];
 
-            if (w._id == withdrawId_ && w._authorized) {
+            if (w._id == withdrawId_) {
 
-                require(w._value <= getContractBalance_ETH(), "This contract haven't enough balance to execute this transaction");
-                executedWithdraw = w;
-                executedWithdraw._destination.transfer(w._value);
-                executedWithdraw._executed = true;
-                executedWithdraw._executionTimestamp = block.timestamp;
+                require(w._authorized && !w._executed, "A withdraw must be authorized and not executed yet, to be executed");
+                require(w._value <= getContractBalance_ETH(), "There is not enough balance in this contract to execute this transaction");
+                w._destination.transfer(w._value);
+                w._executed = true;
+                w._executionTimestamp = block.timestamp;
 
-                _executedWithdrawals.push(executedWithdraw);
-
+                _executedWithdrawals.push(w);
+                executed = true;
                 break;
             }
         }
 
+        require (executed, "Proposed withdraw not found");
         //Deleting executed withdraw from proposed withdrawals list
         if (i == (_proposedWithdrawals.length - 1)) {
             _proposedWithdrawals.pop();
 
         } else {
-            Withdraw storage executed = _proposedWithdrawals[i];
+            Withdraw storage execWithdraw = _proposedWithdrawals[i];
             _proposedWithdrawals[i] = _proposedWithdrawals[_proposedWithdrawals.length - 1];
-            _proposedWithdrawals[_proposedWithdrawals.length - 1] = executed;
+            _proposedWithdrawals[_proposedWithdrawals.length - 1] = execWithdraw;
             _proposedWithdrawals.pop();
         }
-
     }
 
 }

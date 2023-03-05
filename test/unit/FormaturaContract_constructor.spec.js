@@ -20,6 +20,10 @@ describe("FormaturaContract's constructor Unit Test", function () {
     it('Should have 5 members', async function() {
         const deployedMembers = await formaturaContract.getMembers();
         expect( deployedMembers.length ).to.equal(5);
+
+        for (let i = 0; i < deployedMembers.length; i++) {
+            expect(deployedMembers[i]._id).to.equal(i);
+        }
     });
 
     it('Should have 3 committe members', async function() {
