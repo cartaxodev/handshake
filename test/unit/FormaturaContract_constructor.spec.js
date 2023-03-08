@@ -12,7 +12,7 @@ describe("FormaturaContract's constructor Unit Test", function () {
 
         const [members, ] = await membersMock.getMembers();
 
-        FormaturaContract = await ethers.getContractFactory('FormaturaContract');
+        FormaturaContract = await ethers.getContractFactory('FormaturaContractETH');
         formaturaContract = await FormaturaContract.deploy(members, 2, 1);
         //await formaturaContract.deployed();
     });

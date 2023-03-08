@@ -17,7 +17,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
         const [members, notMember] = await membersMock.getMembers();
     
-        const FormaturaContract = await ethers.getContractFactory('FormaturaContract');
+        const FormaturaContract = await ethers.getContractFactory('FormaturaContractETH');
         const formaturaContract = await FormaturaContract.deploy(members, minCommiteMembersToWithdraw, maxWithdrawValue);
         await formaturaContract.deployed();
 
@@ -46,7 +46,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
                 await formaturaContract
                     .connect(member.signer)
-                    .payNextPayment_ETH(memberIndex, {value: 1});
+                    .payNextPayment(memberIndex, {value: 1});
                 cont++;
             }
         }
@@ -62,15 +62,15 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
         await formaturaContract
             .connect(bob.signer)
-            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 1", bob._mainAddress);
+            .proposeWithdraw(bobIndex, 5, "fixture withdraw 1", bob._mainAddress);
 
         await formaturaContract
             .connect(bob.signer)
-            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 2", bob._mainAddress);
+            .proposeWithdraw(bobIndex, 5, "fixture withdraw 2", bob._mainAddress);
 
         await formaturaContract
             .connect(bob.signer)
-            .proposeWithdraw_ETH(bobIndex, 5, "fixture withdraw 3", bob._mainAddress);
+            .proposeWithdraw(bobIndex, 5, "fixture withdraw 3", bob._mainAddress);
 
         return { formaturaContract, members, notMember };
     }
@@ -83,15 +83,15 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
         await formaturaContract
             .connect(alice.signer)
-            .authorizeWithdraw_ETH(aliceIndex, 0);
+            .authorizeWithdraw(aliceIndex, 0);
 
         await formaturaContract
             .connect(alice.signer)
-            .authorizeWithdraw_ETH(aliceIndex, 1);
+            .authorizeWithdraw(aliceIndex, 1);
         
         await formaturaContract
             .connect(alice.signer)
-            .authorizeWithdraw_ETH(aliceIndex, 2);
+            .authorizeWithdraw(aliceIndex, 2);
 
         return { formaturaContract, members, notMember };
     }
@@ -113,7 +113,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect (formaturaContract
                     .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 1})).to.be.revertedWith('This contract is not aproved by all members');
+                    .payNextPayment(bobIndex, {value: 1})).to.be.revertedWith('This contract is not aproved by all members');
             
         });
     
@@ -128,7 +128,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect( formaturaContract
                 .connect(bob.signer)
-                .payNextPayment_ETH(bobIndex, {value: 1})).to.changeEtherBalances(
+                .payNextPayment(bobIndex, {value: 1})).to.changeEtherBalances(
                     [bob.signer, formaturaContract],
                     [-1, 1]
                 );
@@ -164,7 +164,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect( formaturaContract
                     .connect(bob.secondarySigners[0])
-                    .payNextPayment_ETH(bobIndex, {value: 1})).to.changeEtherBalances(
+                    .payNextPayment(bobIndex, {value: 1})).to.changeEtherBalances(
                         [bob.secondarySigners[0], formaturaContract],
                         [-1, 1]
                     );
@@ -201,11 +201,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect (formaturaContract
                 .connect(alice.signer)
-                .payNextPayment_ETH(bobIndex, {value: 1})).to.be.revertedWith('Only the main address or an allowed secondary address of a member can call this function');
+                .payNextPayment(bobIndex, {value: 1})).to.be.revertedWith('Only the main address or an allowed secondary address of a member can call this function');
             
             await expect (formaturaContract
                 .connect(alice.secondarySigners)
-                .payNextPayment_ETH(bobIndex, {value: 1})).to.be.revertedWith('Only the main address or an allowed secondary address of a member can call this function');
+                .payNextPayment(bobIndex, {value: 1})).to.be.revertedWith('Only the main address or an allowed secondary address of a member can call this function');
                     
 
         });
@@ -221,7 +221,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect (formaturaContract
                     .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 999})).to.be.revertedWith('The transaction value must be equal to the payment value');
+                    .payNextPayment(bobIndex, {value: 999})).to.be.revertedWith('The transaction value must be equal to the payment value');
             
         });
 
@@ -236,15 +236,15 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await formaturaContract
                     .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 1});
+                    .payNextPayment(bobIndex, {value: 1});
 
             await formaturaContract
                     .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 1});
+                    .payNextPayment(bobIndex, {value: 1});
 
             await expect (formaturaContract
                     .connect(bob.signer)
-                    .payNextPayment_ETH(bobIndex, {value: 1})).to.be.revertedWith('This member has not pending payments anymore');
+                    .payNextPayment(bobIndex, {value: 1})).to.be.revertedWith('This member has not pending payments anymore');
             
         });
 
@@ -267,7 +267,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             await expect( formaturaContract
                 .connect(bob.signer)
-                .proposeWithdraw_ETH(bobIndex, 5, "To spend with the music group", bob._mainAddress))
+                .proposeWithdraw(bobIndex, 5, "To spend with the music group", bob._mainAddress))
                     .to.changeEtherBalances(
                         [bob.signer, formaturaContract],
                         [0, 0]
@@ -296,11 +296,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect(formaturaContract
                 .connect(bob.signer)
-                .proposeWithdraw_ETH(bobIndex, 6, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the maximum defined in this contract");
+                .proposeWithdraw(bobIndex, 6, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the maximum defined in this contract");
             
             await expect(formaturaContract
                 .connect(bob.signer)
-                .proposeWithdraw_ETH(bobIndex, 12, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the contract balance");
+                .proposeWithdraw(bobIndex, 12, "To spend with the music group", bob._mainAddress)).to.be.revertedWith("Withdraw value must be equal or less than the contract balance");
         
         });
     
@@ -317,11 +317,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
             await expect(formaturaContract
                 .connect(michael.signer)
-                .proposeWithdraw_ETH(michaelIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only committe members can call this function");
+                .proposeWithdraw(michaelIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only committe members can call this function");
             
             await expect(formaturaContract
                 .connect(michael.signer)
-                .proposeWithdraw_ETH(bobIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only the main address of a member can call this function");
+                .proposeWithdraw(bobIndex, 1, "To spend with the music group", michael._mainAddress)).to.be.revertedWith("Only the main address of a member can call this function");
         
         });
     
@@ -349,12 +349,12 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             expect (await formaturaContract
                 .connect(alice.signer)
-                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.changeEtherBalances(
+                .authorizeWithdraw(aliceIndex, proposedWithdrawals[0]._id)).to.changeEtherBalances(
                     [alice.signer, formaturaContract],
                     [0, 0]
                 );
             
-            await formaturaContract.connect(alice.signer).authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[2]._id);
+            await formaturaContract.connect(alice.signer).authorizeWithdraw(aliceIndex, proposedWithdrawals[2]._id);
 
             proposedWithdrawals = await formaturaContract.getProposedWithdrawals();
 
@@ -384,7 +384,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             await expect(formaturaContract
                 .connect(bob.signer)
-                .authorizeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("A member cannot authorize a withdraw twice");
+                .authorizeWithdraw(bobIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("A member cannot authorize a withdraw twice");
             
         });
         
@@ -402,11 +402,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             await expect(formaturaContract
                 .connect(michael.signer)
-                .authorizeWithdraw_ETH(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
+                .authorizeWithdraw(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
             
             await expect(formaturaContract
                 .connect(michael.signer)
-                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                .authorizeWithdraw(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
             
         });
 
@@ -422,7 +422,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
 
             await expect(formaturaContract
                 .connect(notMember.signer)
-                .authorizeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                .authorizeWithdraw(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
               
         });
 
@@ -450,7 +450,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
                 /* EXECUTING THE LAST WITHDRAW OF THE LIST */
                 await expect (formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, 2)).to.changeEtherBalances(
+                    .executeWithdraw(bobIndex, 2)).to.changeEtherBalances(
                         [bob.signer, formaturaContract],
                         [5, -5]
                     );
@@ -476,7 +476,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
                 /* EXECUTING THE FIRST WITHDRAW OF THE LIST */
                 await expect (formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, 0)).to.changeEtherBalances(
+                    .executeWithdraw(bobIndex, 0)).to.changeEtherBalances(
                         [bob.signer, formaturaContract],
                         [5, -5]
                     );
@@ -512,15 +512,15 @@ describe("FormaturaContract's financial methods Unit Test", function () {
                 
                 await formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id);
+                    .executeWithdraw(bobIndex, proposedWithdrawals[0]._id);
                 
                 await formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[1]._id)
+                    .executeWithdraw(bobIndex, proposedWithdrawals[1]._id)
 
                 await expect(formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[2]._id))
+                    .executeWithdraw(bobIndex, proposedWithdrawals[2]._id))
                         .to.be.revertedWith("There is not enough balance in this contract to execute this transaction");
                 
             });
@@ -537,11 +537,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
                 
                 await formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id);
+                    .executeWithdraw(bobIndex, proposedWithdrawals[0]._id);
 
                 await expect(formaturaContract
                     .connect(bob.signer)
-                    .executeWithdraw_ETH(bobIndex, proposedWithdrawals[0]._id))
+                    .executeWithdraw(bobIndex, proposedWithdrawals[0]._id))
                         .to.be.revertedWith("Proposed withdraw not found");
                 
             });
@@ -560,11 +560,11 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
                 await expect(formaturaContract
                     .connect(michael.signer)
-                    .executeWithdraw_ETH(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
+                    .executeWithdraw(michaelIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only committe members can call this function");
                 
                 await expect(formaturaContract
                     .connect(michael.signer)
-                    .executeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                    .executeWithdraw(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
                 
             });
     
@@ -580,7 +580,7 @@ describe("FormaturaContract's financial methods Unit Test", function () {
     
                 await expect(formaturaContract
                     .connect(notMember.signer)
-                    .executeWithdraw_ETH(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
+                    .executeWithdraw(aliceIndex, proposedWithdrawals[0]._id)).to.be.revertedWith("Only the main address of a member can call this function");
                   
             });
 

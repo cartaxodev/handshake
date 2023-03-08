@@ -4,20 +4,20 @@ pragma solidity ^0.8.17;
 
 import "hardhat/console.sol";
 
-contract FormaturaContract {
+abstract contract FormaturaBaseContract {
 
     //Members lists
-    Member[] private _membersList;
-    uint private _membersCounter;
+    Member[] internal _membersList;
+    uint internal _membersCounter;
 
     //Financial rules
-    AllowedCoins private _contractCoin;
-    uint8 private _minCommitteMembersToWithdraw;
-    uint private _withdrawalsCounter;
-    uint private _maxWithdrawValue;
-    Withdraw[] private _proposedWithdrawals;
-    Withdraw[] private _executedWithdrawals;
-    bool private _contractApproved;
+    AllowedCoins internal _contractCoin;
+    uint8 internal _minCommitteMembersToWithdraw;
+    uint internal _withdrawalsCounter;
+    uint internal _maxWithdrawValue;
+    Withdraw[] internal _proposedWithdrawals;
+    Withdraw[] internal _executedWithdrawals;
+    bool internal _contractApproved;
 
     //Rules for penalties (multas, etc)
     //TODO
@@ -37,9 +37,10 @@ contract FormaturaContract {
 
     constructor (Member[] memory membersList_, 
                 uint8 minCommitteMembersToWithdraw_, 
-                uint maxWithdrawValue_) {
+                uint maxWithdrawValue_,
+                AllowedCoins contractCoin_) {
 
-        _contractCoin = AllowedCoins.ETH;
+        _contractCoin = contractCoin_;
         _withdrawalsCounter = 0;
         _minCommitteMembersToWithdraw = minCommitteMembersToWithdraw_;
         _maxWithdrawValue = maxWithdrawValue_;
@@ -111,12 +112,6 @@ contract FormaturaContract {
         _;
     }
 
-    modifier coinETH {
-        require(_contractCoin == AllowedCoins.ETH, 
-            'The contract coin must be ETH to call this function');
-        _;
-    }
-
     modifier onlyCommitte (uint8 memberIndex_) {
         require(_membersList[memberIndex_]._committeMember, 
             'Only committe members can call this function');
@@ -128,10 +123,10 @@ contract FormaturaContract {
         _;
     }
 
-    /* ------------------------------------  PRIVATE FUNCTIONS -------------------------------- */
+    /* ------------------------------------  INTERNAL FUNCTIONS -------------------------------- */
 
     /* Add a new member to the list of members */
-    function addNewMember (Member memory newMember) private {
+    function addNewMember (Member memory newMember) internal {
         Member storage m = _membersList.push();
         
         m._id = _membersCounter++;
@@ -149,7 +144,7 @@ contract FormaturaContract {
     
 
     /* Checks if the secondary address is in the list of secondary addresses of the member */
-    function checkSecondaryAddress (uint8 memberIndex_, address payable secondaryAddress_) private view returns (bool) {
+    function checkSecondaryAddress (uint8 memberIndex_, address payable secondaryAddress_) internal view returns (bool) {
         bool allowed = false;
         Member storage m = _membersList[memberIndex_];
 
@@ -164,7 +159,7 @@ contract FormaturaContract {
     }
 
 
-    function removeSecondaryAddress (Member storage m, address payable addressToBeRemoved_) private {
+    function removeSecondaryAddress (Member storage m, address payable addressToBeRemoved_) internal {
         // TODO: Implement
     }
 
@@ -241,39 +236,6 @@ contract FormaturaContract {
         return i;
     }
 
-    function getContractBalance_ETH () public view returns (uint) {
-        return address(this).balance;
-    }
-
-    function checkBalanceWithPayments_ETH () public view returns (bool) {
-        uint sumOfPayments = 0;
-
-        for (uint i = 0; i < _membersList.length; i++) {
-
-            Payment[] storage p = _membersList[i]._payments;
-
-            for (uint j = 0; j < p.length; j++) {
-
-                if (p[j]._paymentDate != 0) {
-                    sumOfPayments += p[j]._value;
-                }
-            }
-        }
-        
-        uint sumOfWithdrawals = 0;
-
-        for (uint i; i < _executedWithdrawals.length; i++) {
-            sumOfWithdrawals += _executedWithdrawals[i]._value;
-        }
-
-        if ((sumOfPayments - sumOfWithdrawals) == getContractBalance_ETH()) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
     function updateContractApproval () public returns (bool) {
 
         bool approved = true;
@@ -339,6 +301,35 @@ contract FormaturaContract {
         return contractTotalValue;
     }
 
+    function checkBalanceWithPayments () public view returns (bool) {
+        uint sumOfPayments = 0;
+
+        for (uint i = 0; i < _membersList.length; i++) {
+
+            Payment[] storage p = _membersList[i]._payments;
+
+            for (uint j = 0; j < p.length; j++) {
+
+                if (p[j]._paymentDate != 0) {
+                    sumOfPayments += p[j]._value;
+                }
+            }
+        }
+        
+        uint sumOfWithdrawals = 0;
+
+        for (uint i; i < _executedWithdrawals.length; i++) {
+            sumOfWithdrawals += _executedWithdrawals[i]._value;
+        }
+
+        if ((sumOfPayments - sumOfWithdrawals) == getContractBalance()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 
     /* ----------------------------- FUNCTIONS TO MEMBER ACCOUNT MANAGEMENT ------------------------ */
 
@@ -364,19 +355,28 @@ contract FormaturaContract {
 
     }
 
+    /* ------------------------ ABSTRACT FUNCTIONS - Implementations must change deoending of coin (ETH or ERC20) ---------- */
 
+    function getContractBalance () virtual public view returns (uint);
+
+    function checkValueAndTransfer (uint paymentValue_) virtual internal;
+
+    function transfer(address payable destination_, uint value_) virtual internal;
+
+
+   
     /* --------------------------------- FINANCIAL TRANSACTIONS FUNCTIONS (ETH) ------------------------------ */
 
-    function payNextPayment_ETH (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) coinETH {
+    function payNextPayment (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) {
         Payment storage nextPayment = getNextPendingPayment(memberIndex_);
-        require(msg.value == nextPayment._value, 'The transaction value must be equal to the payment value');
+        checkValueAndTransfer(nextPayment._value);
         nextPayment._paymentDate = block.timestamp;
         nextPayment._paid = true;
     }
     
-    function proposeWithdraw_ETH (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
+    function proposeWithdraw (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
 
-        require(value_ <= getContractBalance_ETH(), 
+        require(value_ <= getContractBalance(), 
             'Withdraw value must be equal or less than the contract balance');
 
         require(value_ <= _maxWithdrawValue, 
@@ -391,12 +391,11 @@ contract FormaturaContract {
         newWithdraw._destination = destination_;
 
         newWithdraw._authorizations.push(_membersList[proposerIndex_]);
-        //newWithdraw._authorizationsCounter++;
         _withdrawalsCounter++;
     }
 
 
-    function authorizeWithdraw_ETH (uint8 authorizerIndex_, uint withdrawId_) public onlyCommitte(authorizerIndex_) onlyMainAddress(authorizerIndex_) {
+    function authorizeWithdraw (uint8 authorizerIndex_, uint withdrawId_) public onlyCommitte(authorizerIndex_) onlyMainAddress(authorizerIndex_) {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
@@ -409,7 +408,6 @@ contract FormaturaContract {
                 }
 
                 withdraw._authorizations.push(authorizer);
-                //_proposedWithdrawals[i]._authorizationsCounter++;
 
                 if (withdraw._authorizations.length >= _minCommitteMembersToWithdraw) {
                     withdraw._authorized = true;
@@ -421,7 +419,7 @@ contract FormaturaContract {
     }
 
 
-    function executeWithdraw_ETH (uint8 memberIndex_, uint withdrawId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
+    function executeWithdraw (uint8 memberIndex_, uint withdrawId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
 
         uint i;
         bool executed = false;
@@ -433,8 +431,8 @@ contract FormaturaContract {
             if (w._id == withdrawId_) {
 
                 require(w._authorized && !w._executed, "A withdraw must be authorized and not executed yet, to be executed");
-                require(w._value <= getContractBalance_ETH(), "There is not enough balance in this contract to execute this transaction");
-                w._destination.transfer(w._value);
+                require(w._value <= getContractBalance(), "There is not enough balance in this contract to execute this transaction");
+                transfer(w._destination, w._value);
                 w._executed = true;
                 w._executionTimestamp = block.timestamp;
 
