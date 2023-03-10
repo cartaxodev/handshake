@@ -21,7 +21,7 @@ exports.getMembers = async function() {
 
     const member2 = {
         signer: signer2,
-        secondarySigners: signer8,
+        secondarySigners: [signer8],
         _id: 0,
         _login: 'alice',
         _mainAddress: signer2.address,

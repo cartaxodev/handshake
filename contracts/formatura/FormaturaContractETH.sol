@@ -7,17 +7,20 @@ import "./FormaturaBaseContract.sol";
 
 contract FormaturaContractETH is FormaturaBaseContract {
 
+    AllowedTokens internal constant _tokenType = AllowedTokens.ETH;
+
     constructor (Member[] memory membersList_, 
                 uint8 minCommitteMembersToWithdraw_, 
                 uint maxWithdrawValue_) FormaturaBaseContract (
                                                     membersList_,
                                                     minCommitteMembersToWithdraw_,
-                                                    maxWithdrawValue_,
-                                                    AllowedCoins.ETH
+                                                    maxWithdrawValue_
                                                 ) {
     }
 
-    
+    function getTokenType () override public pure returns (AllowedTokens) {
+        return _tokenType;
+    }
 
     function getContractBalance () override public view returns (uint) {
         return address(this).balance;

@@ -51,8 +51,8 @@ describe("FormaturaContract's constructor Unit Test", function () {
         } 
     });
 
-    it('Should the contract coin be equal do ETH (0)', async function() {
-        const contractCoin = await formaturaContract.getContractCoin();
+    it('Should token type be equal do ETH (0)', async function() {
+        const contractCoin = await formaturaContract.getTokenType();
         expect(contractCoin).to.equal(0);
     });
 
@@ -76,6 +76,11 @@ describe("FormaturaContract's constructor Unit Test", function () {
         const executedWithdrawals = await formaturaContract.getExecutedWithdrawals();
         expect(proposedWithdrawals.length).to.equal(0);
         expect(executedWithdrawals.length).to.equal(0);
+    });
+
+    it('Should the maximum value on a withdrawal equal to 1', async function() {
+        const contractBalance = await formaturaContract.getContractBalance();
+        expect(contractBalance).to.equal(0);
     });
 
 });

@@ -11,7 +11,6 @@ abstract contract FormaturaBaseContract {
     uint internal _membersCounter;
 
     //Financial rules
-    AllowedCoins internal _contractCoin;
     uint8 internal _minCommitteMembersToWithdraw;
     uint internal _withdrawalsCounter;
     uint internal _maxWithdrawValue;
@@ -37,10 +36,9 @@ abstract contract FormaturaBaseContract {
 
     constructor (Member[] memory membersList_, 
                 uint8 minCommitteMembersToWithdraw_, 
-                uint maxWithdrawValue_,
-                AllowedCoins contractCoin_) {
+                uint maxWithdrawValue_) {
 
-        _contractCoin = contractCoin_;
+        //_contractCoin = contractCoin_;
         _withdrawalsCounter = 0;
         _minCommitteMembersToWithdraw = minCommitteMembersToWithdraw_;
         _maxWithdrawValue = maxWithdrawValue_;
@@ -83,9 +81,9 @@ abstract contract FormaturaBaseContract {
         uint _executionTimestamp;
     }
 
-    enum AllowedCoins {
+    enum AllowedTokens {
         ETH,
-        USDC
+        ERC20
     }
 
 
@@ -192,10 +190,6 @@ abstract contract FormaturaBaseContract {
 
     function getMembers () public view returns (Member[] memory) {
         return _membersList;
-    }
-
-    function getContractCoin () public view returns (AllowedCoins) {
-        return _contractCoin;
     }
 
     function getMinCommitteMembersToWithdraw () public view returns (uint8) {
@@ -357,6 +351,8 @@ abstract contract FormaturaBaseContract {
 
     /* ------------------------ ABSTRACT FUNCTIONS - Implementations must change deoending of coin (ETH or ERC20) ---------- */
 
+    function getTokenType () virtual public view returns (AllowedTokens);
+    
     function getContractBalance () virtual public view returns (uint);
 
     function checkValueAndTransfer (uint paymentValue_) virtual internal;
