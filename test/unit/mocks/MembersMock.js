@@ -1,8 +1,8 @@
 exports.getMembers = async function() {
     
-    const payments = [
-        {_value: 1, _dueDate: 1, _paymentDate: 0, _paid: false}, 
-        {_value: 1, _dueDate: 2, _paymentDate: 0, _paid: false}
+    const deposits = [
+        {_value: 1, _dueDate: 1, _depositDate: 0, _paid: false}, 
+        {_value: 1, _dueDate: 2, _depositDate: 0, _paid: false}
     ];
 
     const [signer1, signer2, signer3, signer4, signer5, signer6, signer7, signer8] = await ethers.getSigners();
@@ -16,7 +16,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [signer7.address],
         _contractApproved: false,
         _committeMember: true,
-        _payments: payments
+        _deposits: deposits
     };
 
     const member2 = {
@@ -28,7 +28,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [signer8.address],
         _contractApproved: true,
         _committeMember: true,
-        _payments: payments
+        _deposits: deposits
     };
 
     const member3 = {
@@ -39,7 +39,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [],
         _contractApproved: false,
         _committeMember: true,
-        _payments: payments
+        _deposits: deposits
     };
 
     const member4 = {
@@ -50,7 +50,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [],
         _contractApproved: true,
         _committeMember: false,
-        _payments: payments
+        _deposits: deposits
     };
 
     const member5 = {
@@ -61,7 +61,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [],
         _contractApproved: false,
         _committeMember: false,
-        _payments: payments
+        _deposits: deposits
     };
 
     const notMember = {
@@ -72,7 +72,7 @@ exports.getMembers = async function() {
         _secondaryAddresses: [],
         _contractApproved: true,
         _committeMember: false,
-        _payments: payments
+        _deposits: deposits
     };
 
     const members = [member1, member2, member3, member4, member5];

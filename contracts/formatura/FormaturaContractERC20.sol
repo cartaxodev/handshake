@@ -32,15 +32,15 @@ contract FormaturaContractERC20 is FormaturaBaseContract {
         return _token.balanceOf(address(this));
     }
 
-    function checkValueAndTransfer (uint paymentValue_) override internal {
+    function deposit (uint depositValue_) override internal {
         //require(msg.value == paymentValue_, 'The transaction value must be equal to the payment value');
-        require(paymentValue_ > 0, "Payment value must be greater than zero");
+        require(depositValue_ > 0, "Deposit value must be greater than zero");
         uint256 allowance = _token.allowance(msg.sender, address(this));
-        require(allowance >= paymentValue_, "This contract has not enough allowance to execute this payment");
-        _token.transferFrom(msg.sender, address(this), paymentValue_);
+        require(allowance >= depositValue_, "This contract has not enough allowance to execute this deposit");
+        _token.transferFrom(msg.sender, address(this), depositValue_);
     }
 
-    function transfer(address payable destination_, uint value_) override internal {
+    function withdraw(address payable destination_, uint value_) override internal {
         _token.transfer(destination_, value_);
     }
 

@@ -14,14 +14,14 @@ abstract contract FormaturaBaseContract {
     uint8 internal _minCommitteMembersToWithdraw;
     uint internal _withdrawalsCounter;
     uint internal _maxWithdrawValue;
-    Withdraw[] internal _proposedWithdrawals;
-    Withdraw[] internal _executedWithdrawals;
+    Withdrawal[] internal _proposedWithdrawals;
+    Withdrawal[] internal _executedWithdrawals;
     bool internal _contractApproved;
 
-    //Rules for penalties (multas, etc)
+    //Rules duedate control and execution of penalties (multas, etc)
     //TODO
 
-    //Rules for changing the contract
+    //Rules for making changes on the contract
     //TODO
 
     //Rules for changing the members
@@ -31,6 +31,9 @@ abstract contract FormaturaBaseContract {
     //TODO
 
     //Rules for getting out the contract
+    //TODO
+
+    //Rules for specifying withdrawals schedule
     //TODO
     
 
@@ -56,18 +59,18 @@ abstract contract FormaturaBaseContract {
         address payable[] _secondaryAddresses;
         bool _contractApproved;
         bool _committeMember;
-        Payment[] _payments;
+        Deposit[] _deposits;
     }
 
-    struct Payment {
+    struct Deposit {
 
         uint _value;   // <-- Must be different to zero
         uint _dueDate;     //block.timestamp() --- from unix epoch
-        uint _paymentDate;
+        uint _depositDate;
         bool _paid;
     }
 
-    struct Withdraw {
+    struct Withdrawal {
 
         uint _id;
         Member _proposer;
@@ -134,9 +137,9 @@ abstract contract FormaturaBaseContract {
         m._committeMember = newMember._committeMember;
         m._contractApproved = false;
 
-        for (uint i = 0; i < newMember._payments.length; i++) {
-            require (newMember._payments[i]._value > 0, "All payments must have a value greater than zero");
-            m._payments.push(newMember._payments[i]);
+        for (uint i = 0; i < newMember._deposits.length; i++) {
+            require (newMember._deposits[i]._value > 0, "All deposits must have a value greater than zero");
+            m._deposits.push(newMember._deposits[i]);
         }
     }
     
@@ -162,27 +165,27 @@ abstract contract FormaturaBaseContract {
     }
 
 
-    function getNextPendingPayment (uint8 memberIndex_) internal view returns (Payment storage) {
+    function getNextPendingDeposit (uint8 memberIndex_) internal view returns (Deposit storage) {
         
         Member storage member = _membersList[memberIndex_];
-        Payment[] storage payments = member._payments;
+        Deposit[] storage deposits = member._deposits;
 
         uint i;
 
-        Payment memory p;
-        bool havePendingPayments = false;
+        Deposit memory p;
+        bool havePendingDeposits = false;
 
-        for (i = 0; i < payments.length; i++) {
-            if (payments[i]._paid == false) {
-                p = payments[i];
-                havePendingPayments = true;
+        for (i = 0; i < deposits.length; i++) {
+            if (deposits[i]._paid == false) {
+                p = deposits[i];
+                havePendingDeposits = true;
                 break;
             }
         }
 
-        require(havePendingPayments , 'This member has not pending payments anymore');
+        require(havePendingDeposits , 'This member has not pending deposits anymore');
 
-        return payments[i];
+        return deposits[i];
     }
 
     /* ----------------------------- PUBLIC GETTERS --------------------------------------------- */
@@ -204,11 +207,11 @@ abstract contract FormaturaBaseContract {
         return _maxWithdrawValue;
     }
 
-    function getProposedWithdrawals () public view returns (Withdraw[] memory) {
+    function getProposedWithdrawals () public view returns (Withdrawal[] memory) {
         return _proposedWithdrawals;
     }
 
-    function getExecutedWithdrawals () public view returns (Withdraw[] memory) {
+    function getExecutedWithdrawals () public view returns (Withdrawal[] memory) {
         return _executedWithdrawals;
     }
 
@@ -245,37 +248,37 @@ abstract contract FormaturaBaseContract {
     }
 
 
-    function getNextPaymentDueDate (uint8 memberIndex_) public view returns (uint) {
-        Payment memory nextPayment = getNextPendingPayment(memberIndex_);
-        return nextPayment._dueDate;
+    function getNextDepositDueDate (uint8 memberIndex_) public view returns (uint) {
+        Deposit memory nextDeposit = getNextPendingDeposit(memberIndex_);
+        return nextDeposit._dueDate;
     }
 
 
     function getRemainingDebt (uint8 memberIndex_) public view returns (uint) {
-        Payment[] memory p = _membersList[memberIndex_]._payments;
+        Deposit[] memory deposits = _membersList[memberIndex_]._deposits;
 
         uint remainingValue = 0;
 
-        for (uint i; i < p.length; i++) {
-            if (p[i]._paid == false) {
-                remainingValue += p[i]._value;
+        for (uint i; i < deposits.length; i++) {
+            if (deposits[i]._paid == false) {
+                remainingValue += deposits[i]._value;
             }
         }
         return remainingValue;
     }
 
 
-    function getPaidValue (uint8 memberIndex_) public view returns (uint) {
-        Payment[] memory p = _membersList[memberIndex_]._payments;
+    function getDepositedValue (uint8 memberIndex_) public view returns (uint) {
+        Deposit[] memory deposits = _membersList[memberIndex_]._deposits;
 
-        uint paidValue = 0;
+        uint depositedValue = 0;
 
-        for (uint i; i < p.length; i++) {
-            if (p[i]._paid == true) {
-                paidValue += p[i]._value;
+        for (uint i; i < deposits.length; i++) {
+            if (deposits[i]._paid == true) {
+                depositedValue += deposits[i]._value;
             }
         }
-        return paidValue;
+        return depositedValue;
     }
 
 
@@ -285,27 +288,27 @@ abstract contract FormaturaBaseContract {
         
         for (uint i = 0; i < _membersList.length; i++) {
 
-            Payment[] storage p = _membersList[i]._payments;
+            Deposit[] storage d = _membersList[i]._deposits;
 
-            for (uint j = 0; j < p.length; j++) {
-                contractTotalValue += p[j]._value;
+            for (uint j = 0; j < d.length; j++) {
+                contractTotalValue += d[j]._value;
             }
         }
 
         return contractTotalValue;
     }
 
-    function checkBalanceWithPayments () public view returns (bool) {
-        uint sumOfPayments = 0;
+    function checkBalanceWithDeposits () public view returns (bool) {
+        uint sumOfDeposits = 0;
 
         for (uint i = 0; i < _membersList.length; i++) {
 
-            Payment[] storage p = _membersList[i]._payments;
+            Deposit[] storage deposits = _membersList[i]._deposits;
 
-            for (uint j = 0; j < p.length; j++) {
+            for (uint j = 0; j < deposits.length; j++) {
 
-                if (p[j]._paymentDate != 0) {
-                    sumOfPayments += p[j]._value;
+                if (deposits[j]._depositDate != 0) {
+                    sumOfDeposits += deposits[j]._value;
                 }
             }
         }
@@ -316,7 +319,7 @@ abstract contract FormaturaBaseContract {
             sumOfWithdrawals += _executedWithdrawals[i]._value;
         }
 
-        if ((sumOfPayments - sumOfWithdrawals) == getContractBalance()) {
+        if ((sumOfDeposits - sumOfWithdrawals) == getContractBalance()) {
             return true;
         } else {
             return false;
@@ -355,30 +358,30 @@ abstract contract FormaturaBaseContract {
     
     function getContractBalance () virtual public view returns (uint);
 
-    function checkValueAndTransfer (uint paymentValue_) virtual internal;
+    function deposit (uint depositValue_) virtual internal;
 
-    function transfer(address payable destination_, uint value_) virtual internal;
+    function withdraw(address payable destination_, uint value_) virtual internal;
 
 
    
     /* --------------------------------- FINANCIAL TRANSACTIONS FUNCTIONS (ETH) ------------------------------ */
 
-    function payNextPayment (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) {
-        Payment storage nextPayment = getNextPendingPayment(memberIndex_);
-        checkValueAndTransfer(nextPayment._value);
-        nextPayment._paymentDate = block.timestamp;
-        nextPayment._paid = true;
+    function payNextDeposit (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) {
+        Deposit storage nextDeposit = getNextPendingDeposit(memberIndex_);
+        deposit(nextDeposit._value);
+        nextDeposit._depositDate = block.timestamp;
+        nextDeposit._paid = true;
     }
     
-    function proposeWithdraw (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
+    function proposeWithdrawal (uint8 proposerIndex_, uint value_, string memory objective_, address payable destination_) public onlyCommitte(proposerIndex_) onlyMainAddress(proposerIndex_) {
 
         require(value_ <= getContractBalance(), 
-            'Withdraw value must be equal or less than the contract balance');
+            'Withdrawal value must be equal or less than the contract balance');
 
         require(value_ <= _maxWithdrawValue, 
-            'Withdraw value must be equal or less than the maximum defined in this contract');
+            'Withdrawal value must be equal or less than the maximum defined in this contract');
 
-        Withdraw storage newWithdraw = _proposedWithdrawals.push();
+        Withdrawal storage newWithdraw = _proposedWithdrawals.push();
 
         newWithdraw._id = _withdrawalsCounter;
         newWithdraw._proposer = _membersList[proposerIndex_];
@@ -391,22 +394,22 @@ abstract contract FormaturaBaseContract {
     }
 
 
-    function authorizeWithdraw (uint8 authorizerIndex_, uint withdrawId_) public onlyCommitte(authorizerIndex_) onlyMainAddress(authorizerIndex_) {
+    function authorizeWithdrawal (uint8 authorizerIndex_, uint withdrawId_) public onlyCommitte(authorizerIndex_) onlyMainAddress(authorizerIndex_) {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
                 
-                Withdraw storage withdraw = _proposedWithdrawals[i];
+                Withdrawal storage withdrawal = _proposedWithdrawals[i];
                 Member storage authorizer = _membersList[authorizerIndex_];
 
-                for (uint j = 0; j < withdraw._authorizations.length; j++) {
-                    require (withdraw._authorizations[j]._id != authorizer._id, "A member cannot authorize a withdraw twice");
+                for (uint j = 0; j < withdrawal._authorizations.length; j++) {
+                    require (withdrawal._authorizations[j]._id != authorizer._id, "A member cannot authorize a withdrawal twice");
                 }
 
-                withdraw._authorizations.push(authorizer);
+                withdrawal._authorizations.push(authorizer);
 
-                if (withdraw._authorizations.length >= _minCommitteMembersToWithdraw) {
-                    withdraw._authorized = true;
+                if (withdrawal._authorizations.length >= _minCommitteMembersToWithdraw) {
+                    withdrawal._authorized = true;
                 }
                 break;
             }
@@ -415,36 +418,39 @@ abstract contract FormaturaBaseContract {
     }
 
 
-    function executeWithdraw (uint8 memberIndex_, uint withdrawId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
+    function executeWithdrawal (uint8 memberIndex_, uint withdrawalId_) public onlyCommitte(memberIndex_) onlyMainAddress(memberIndex_) {
 
         uint i;
         bool executed = false;
 
         for (i = 0; i < _proposedWithdrawals.length; i++) {
 
-            Withdraw storage w = _proposedWithdrawals[i];
+            Withdrawal storage w = _proposedWithdrawals[i];
 
-            if (w._id == withdrawId_) {
+            if (w._id == withdrawalId_) {
 
-                require(w._authorized && !w._executed, "A withdraw must be authorized and not executed yet, to be executed");
+                require(w._authorized && !w._executed, "A withdrawal must be authorized and not executed yet, to be executed");
                 require(w._value <= getContractBalance(), "There is not enough balance in this contract to execute this transaction");
-                transfer(w._destination, w._value);
+                
                 w._executed = true;
                 w._executionTimestamp = block.timestamp;
 
-                _executedWithdrawals.push(w);
                 executed = true;
+                _executedWithdrawals.push(w);
+
+                withdraw(w._destination, w._value);
+                
                 break;
             }
         }
 
-        require (executed, "Proposed withdraw not found");
+        require (executed, "Proposed withdrawal not found");
         //Deleting executed withdraw from proposed withdrawals list
         if (i == (_proposedWithdrawals.length - 1)) {
             _proposedWithdrawals.pop();
 
         } else {
-            Withdraw storage execWithdraw = _proposedWithdrawals[i];
+            Withdrawal storage execWithdraw = _proposedWithdrawals[i];
             _proposedWithdrawals[i] = _proposedWithdrawals[_proposedWithdrawals.length - 1];
             _proposedWithdrawals[_proposedWithdrawals.length - 1] = execWithdraw;
             _proposedWithdrawals.pop();

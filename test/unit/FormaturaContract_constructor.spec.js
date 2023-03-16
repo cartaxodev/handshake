@@ -47,7 +47,7 @@ describe("FormaturaContract's constructor Unit Test", function () {
     it("Should all members have 2 pending payments", async function() {
         const deployedMembers = await formaturaContract.getMembers();
         for (let member of deployedMembers) {
-            expect( member._payments.length ).to.equal(2);
+            expect( member._deposits.length ).to.equal(2);
         } 
     });
 

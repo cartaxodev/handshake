@@ -26,11 +26,11 @@ contract FormaturaContractETH is FormaturaBaseContract {
         return address(this).balance;
     }
 
-    function checkValueAndTransfer (uint paymentValue_) override internal {
-        require(msg.value == paymentValue_, 'The transaction value must be equal to the payment value');
+    function deposit (uint depositValue_) override internal {
+        require(msg.value == depositValue_, 'The transaction value must be equal to the deposit value');
     }
 
-    function transfer(address payable destination_, uint value_) override internal {
+    function withdraw(address payable destination_, uint value_) override internal {
         destination_.transfer(value_);
     }
 
