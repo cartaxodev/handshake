@@ -9,16 +9,18 @@ abstract contract BankAccount is MultimemberContract {
 
     //Deposits
     Deposit[] internal _depositsList;
-    uint internal _depositsCounter;
+    uint private _depositsIncremental;
     
     //Withdrawals
     Withdrawal[] internal _withdrawalsList;
-    uint internal _withdrawalsCounter;
+    uint private _withdrawalsIncremental;
 
 
-    constructor (Member[] memory membersList_) MultimemberContract(membersList_) {
-        _depositsCounter = 0;
-        _withdrawalsCounter = 0;
+    constructor (Member[] memory membersList_, 
+                 address[] memory memberManagers_) MultimemberContract(membersList_, memberManagers_) {
+
+        _depositsIncremental = 0;
+        _withdrawalsIncremental = 0;
     }
 
 
@@ -35,7 +37,7 @@ abstract contract BankAccount is MultimemberContract {
         uint _id;
         address _to;
         uint _value;
-        uint _withdrawTimestamp;
+        uint _withdrawalTimestamp;
     }
 
     enum AllowedTokens {
@@ -59,14 +61,45 @@ abstract contract BankAccount is MultimemberContract {
     }
 
 
+    //** INTERNAL FUNCTIONS **//
+
+    function _registerDeposit (address from_, uint value_, uint depositTimestamp_) internal returns (uint) {
+        
+        Deposit memory deposit = Deposit({
+            _id: _depositsIncremental++,
+            _from: from_,
+            _value: value_,
+            _depositTimestamp: depositTimestamp_
+        });
+
+        _depositsList.push(deposit);
+
+        return deposit._id;
+    }
+
+    function _registerWithdrawals (address to_, uint value_, uint withdrawalTimestamp_) internal returns (uint) {
+        
+        Withdrawal memory withdrawal = Withdrawal({
+            _id: _withdrawalsIncremental++,
+            _to: to_,
+            _value: value_,
+            _withdrawalTimestamp: withdrawalTimestamp_
+        });
+
+        _withdrawalsList.push(withdrawal);
+
+        return withdrawal._id;
+    }
+
+
     //** ABSRTACT/VIRTUAL FUNCTIONS **//
 
-    function getTokenType () virtual public view returns (AllowedTokens);
+    function _getTokenType () virtual public view returns (AllowedTokens);
     
-    function getContractBalance () virtual public view returns (uint);
+    function _getContractBalance () virtual public view returns (uint);
 
-    function deposit (uint depositValue_) virtual internal;
+    function _deposit (uint depositValue_) virtual internal;
 
-    function withdraw (address payable destination_, uint value_) virtual internal;
+    function _withdraw (address payable destination_, uint value_) virtual internal;
 
 }
