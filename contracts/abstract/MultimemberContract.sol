@@ -15,7 +15,7 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
 
     //Changes on members lists
     MemberProposal[] private _memberInclusionProposals;
-    uint private _memberInclusionProporalsIncremental;
+    uint private _memberInclusionProposalsIncremental;
     uint private _minApprovalsToAddNewMember;
 
     //Contract Approvals
@@ -100,13 +100,13 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     //** INTERNAL METHODS */
 
     /* Add a new member in active members list */
-    function _addNewMember (Member memory newMember) internal {
+    function _addNewMember (Member memory newMember_) internal {
         Member storage m = _activeMembers.push();
         
         m._id = _memberIdIncremental++;
-        m._login = newMember._login;
-        m._mainAddress = newMember._mainAddress;
-        m._secondaryAddresses = newMember._secondaryAddresses;
+        m._login = newMember_._login;
+        m._mainAddress = newMember_._mainAddress;
+        m._secondaryAddresses = newMember_._secondaryAddresses;
 
         _contractApproved = false; // Each new active member needs to approve the contract
     }
@@ -195,7 +195,7 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         }
 
         MemberProposal storage m = _memberInclusionProposals.push();
-        m._id = _memberInclusionProporalsIncremental++;
+        m._id = _memberInclusionProposalsIncremental++;
         m._newMember = newMember_;
         m._approvals.push(_activeMembers[memberIndex_]);
     }

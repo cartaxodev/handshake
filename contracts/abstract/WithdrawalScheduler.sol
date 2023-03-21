@@ -3,9 +3,9 @@
 pragma solidity ^0.8.17;
 
 import "hardhat/console.sol";
-import "./BankAccount.sol";
+import "./WithdrawalController.sol";
 
-abstract contract WithdrawalScheduler {
+abstract contract WithdrawalScheduler is WithdrawalController {
 
     // Calendário de retiradas com objetivos e destinatários pré-definidos
 

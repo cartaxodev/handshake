@@ -10,10 +10,12 @@ abstract contract AccessControlUtils {
 
     // Allow a user to make changes in members list of a multimember contract
     bytes32 public constant MEMBER_MANAGER_ROLE = keccak256("MEMBER_MANAGER");
+    bytes32 public constant WITHDRAWAL_APPROVER_ROLE = keccak256("WITHDRAWAL_APPROVER");
 
     constructor () {
 
         _rolesList.push(MEMBER_MANAGER_ROLE);
+        _rolesList.push(WITHDRAWAL_APPROVER_ROLE);
 
     }
 

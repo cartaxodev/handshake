@@ -18,7 +18,7 @@ abstract contract DepositScheduler is BankAccount {
    constructor (Member[] memory membersList_,
                 address[] memory memberManagers_, 
                 DeadlineControlConfig memory deadlineControlConfig_) BankAccount (membersList_, memberManagers_) {
-                  
+
       _deadlineControlConfig = deadlineControlConfig_;
    }
 
@@ -35,10 +35,10 @@ abstract contract DepositScheduler is BankAccount {
       uint _memberId;
       uint _value;
       uint _deadlineTimestamp;
-      ExecutionInfo _executionInfo;
+      DepositExecutionInfo _executionInfo;
    }
 
-   struct ExecutionInfo {
+   struct DepositExecutionInfo {
       bool _executed;
       uint _principalValue;
       uint _lateDepositFee;
@@ -89,7 +89,7 @@ abstract contract DepositScheduler is BankAccount {
 
       for (uint i = 0; i < depositSchedule_.length; i++) {
          DepositScheduling memory newScheduling = depositSchedule_[i];
-         newScheduling._executionInfo = ExecutionInfo({
+         newScheduling._executionInfo = DepositExecutionInfo({
             _executed: false,
             _principalValue: newScheduling._value,
             _lateDepositFee: 0,
