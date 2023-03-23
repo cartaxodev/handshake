@@ -9,8 +9,10 @@ abstract contract BankAccount_ETH is BankAccount {
 
     AllowedTokens internal constant _tokenType = AllowedTokens.ETH;
 
-    constructor (Member[] memory membersList_, 
+    constructor (string memory objective_,
+                Member[] memory membersList_, 
                 address[] memory memberManagers_) BankAccount (
+                                                    objective_,
                                                     membersList_,
                                                     memberManagers_
                                                 ) {

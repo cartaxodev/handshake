@@ -12,9 +12,10 @@ abstract contract BankAccount_ERC20 is BankAccount {
     address internal _tokenAddress;
     IERC20 internal _token;
 
-    constructor (Member[] memory membersList_, 
+    constructor (string memory objective_,
+                Member[] memory membersList_, 
                 address[] memory memberManagers_,
-                address tokenAddress_) BankAccount (
+                address tokenAddress_) BankAccount (objective_,
                                                     membersList_,
                                                     memberManagers_
                                                 ) {

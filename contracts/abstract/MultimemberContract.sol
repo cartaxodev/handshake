@@ -8,6 +8,9 @@ import "./../util/AccessControlUtils.sol";
 
 abstract contract MultimemberContract is AccessControlEnumerable, AccessControlUtils {
     
+    //Objective of this contract
+    string internal _objective;
+
     //Members lists
     Member[] internal _activeMembers;
     Member[] private _inactiveMembers;
@@ -23,9 +26,11 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     bool private _contractApproved;
 
 
-    constructor (Member[] memory membersList_, 
+    constructor (string memory objective_,
+                 Member[] memory membersList_, 
                  address[] memory memberManagers_) {
 
+        _objective = objective_;
         _memberIdIncremental = 0;
 
         for (uint i = 0; i < membersList_.length; i++) {
@@ -51,8 +56,14 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     struct MemberProposal {
 
         uint _id;
-        Member _newMember;
+        ProposalType _proposalType;
+        Member _affectedMember;
         Member[] _approvals;
+    }
+
+    enum ProposalType {
+        INCLUSION,
+        EXCLUSION
     }
 
 
@@ -187,7 +198,7 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
 
     /* Proposes the inclusion of a new member in this contract.
     If the number os approvals required to add a new member is equal or less than one, the new member is directly added. */
-    function proposeMemberInclusion (uint memberIndex_, Member memory newMember_) public onlyMainAddress(memberIndex_) onlyRole(MEMBER_MANAGER_ROLE) {
+    function proposeMemberInclusion (uint proposerIndex_, Member memory newMember_) public onlyMainAddress(proposerIndex_) onlyRole(MEMBER_MANAGER_ROLE) {
 
         if (_minApprovalsToAddNewMember <= 1) {
             _addNewMember(newMember_);
@@ -196,8 +207,13 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
 
         MemberProposal storage m = _memberInclusionProposals.push();
         m._id = _memberInclusionProposalsIncremental++;
-        m._newMember = newMember_;
-        m._approvals.push(_activeMembers[memberIndex_]);
+        m._proposalType = ProposalType.INCLUSION;
+        m._affectedMember = newMember_;
+        m._approvals.push(_activeMembers[proposerIndex_]);
+    }
+
+    function proposeMemberExclusion (uint proposerIndex_, uint affectedMember_) public onlyMainAddress(proposerIndex_) onlyRole(MEMBER_MANAGER_ROLE) {
+        //TODO: Implement
     }
 
 
@@ -214,6 +230,8 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
 
             if (mp._id == memberProposalId_) {
 
+                require (mp._proposalType == ProposalType.INCLUSION, "This proposal is not a member inclusion proposal");
+
                 for (uint j = 0; j < mp._approvals.length; j++) {
                     require (mp._approvals[j]._id != approver._id, "A member cannot approve a member inclusion proposal twice");
                 }
@@ -228,7 +246,7 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         require (approved, "Member inclusion proposal not found");
 
         if (mp._approvals.length >= _minApprovalsToAddNewMember) {
-            _addNewMember(mp._newMember);
+            _addNewMember(mp._affectedMember);
 
             //Deleting approved proposal from the proposals list
             if (i == (_memberInclusionProposals.length - 1)) {
@@ -241,6 +259,10 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
                 _memberInclusionProposals.pop();
             }
         }
+    }
+
+    function approveMemberExclusionProposal (uint approverIndex_, uint memberProposalId_) public onlyMainAddress(approverIndex_) onlyRole(MEMBER_MANAGER_ROLE) {
+        //TODO: Implement
     }
 
 }

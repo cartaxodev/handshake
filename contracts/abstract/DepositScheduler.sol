@@ -15,9 +15,10 @@ abstract contract DepositScheduler is BankAccount {
    DeadlineControlConfig internal _deadlineControlConfig;
 
 
-   constructor (Member[] memory membersList_,
+   constructor (string memory objective_,
+                Member[] memory membersList_,
                 address[] memory memberManagers_, 
-                DeadlineControlConfig memory deadlineControlConfig_) BankAccount (membersList_, memberManagers_) {
+                DeadlineControlConfig memory deadlineControlConfig_) BankAccount (objective_, membersList_, memberManagers_) {
 
       _deadlineControlConfig = deadlineControlConfig_;
    }

@@ -16,8 +16,9 @@ abstract contract BankAccount is MultimemberContract {
     uint private _withdrawalsIncremental;
 
 
-    constructor (Member[] memory membersList_, 
-                 address[] memory memberManagers_) MultimemberContract(membersList_, memberManagers_) {
+    constructor (string memory objective_,
+                 Member[] memory membersList_, 
+                 address[] memory memberManagers_) MultimemberContract(objective_, membersList_, memberManagers_) {
 
         _depositsIncremental = 0;
         _withdrawalsIncremental = 0;

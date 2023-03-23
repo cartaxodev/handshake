@@ -7,29 +7,36 @@ import "./BankAccount.sol";
 
 abstract contract WithdrawalController is BankAccount {
 
-    uint internal _minApprovalsToWithdraw;
+    WithdrawalsConfig private _withdrawalsConfig;
     uint internal _withdrawalsIncremental;
-    uint internal _maxWithdrawalValue;
     WithdrawalProposal[] internal _proposedWithdrawals;
     WithdrawalProposal[] internal _executedWithdrawals;
 
-    constructor (Member[] memory membersList_,
+    constructor (string memory objective_,
+                Member[] memory membersList_,
                 address[] memory memberManagers_,
                 address[] memory withdrawalApprovers_,
                 uint minApprovalsToWithdraw_,
-                uint maxWithdrawValue_) BankAccount (membersList_, memberManagers_) {
+                uint maxWithdrawValue_) BankAccount (objective_, membersList_, memberManagers_) {
+                    
+                    require (minApprovalsToWithdraw_ <= membersList_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the number of active members");
+                    require (minApprovalsToWithdraw_ <= withdrawalApprovers_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the total of approvers of this contract");
+                    require (maxWithdrawValue_ > 0, "The maximum value os a withdrawal must be grater than zero");
 
-                    _minApprovalsToWithdraw = minApprovalsToWithdraw_;
-                    _maxWithdrawalValue = maxWithdrawValue_;
+                    _withdrawalsConfig._minApprovalsToWithdraw = minApprovalsToWithdraw_;
+                    _withdrawalsConfig._maxWithdrawalValue = maxWithdrawValue_;
                     _withdrawalsIncremental = 0;
 
-                    for (uint i = 0; i < withdrawalApprovers_.length; i++) {
-                        _grantRole(WITHDRAWAL_APPROVER_ROLE, withdrawalApprovers_[i]);
-                    }
+                    _addApprovers(withdrawalApprovers_, membersList_);
                 }
 
     
     //** STRUCTS **//
+
+    struct WithdrawalsConfig {
+        uint _minApprovalsToWithdraw;
+        uint _maxWithdrawalValue;
+    }
 
     struct WithdrawalProposal {
 
@@ -59,6 +66,42 @@ abstract contract WithdrawalController is BankAccount {
     function getExecutedWithdrawals () public view returns (WithdrawalProposal[] memory) {
         return _executedWithdrawals;
     }
+
+
+    //** INTERNAL METHODS **//
+
+    function _addApprovers (address[] memory withdrawalApprovers_, Member[] memory membersList_) private {
+        
+        for (uint i = 0; i < withdrawalApprovers_.length; i++) {
+            bool approverIsMember = false;
+            for (uint j = 0; j < membersList_.length; j++) {
+                if (withdrawalApprovers_[i] == membersList_[j]._mainAddress) {
+                    approverIsMember = true;
+                    _grantRole(WITHDRAWAL_APPROVER_ROLE, withdrawalApprovers_[i]);
+                    break;
+                }
+            }
+            require (approverIsMember, "One (or more) withdrawal approver is not an active member");
+        }
+    }
+
+
+    function _getMinApprovalsToWithdrawal () private view returns (uint) {
+
+        uint approversCount = getRoleMemberCount(WITHDRAWAL_APPROVER_ROLE);
+
+        if (approversCount < _withdrawalsConfig._minApprovalsToWithdraw) {
+            return approversCount;
+
+        } else {
+            return _withdrawalsConfig._minApprovalsToWithdraw;
+        }
+    }
+
+
+    function _getMaxWithdrawalValue () private view returns (uint) {
+        return _withdrawalsConfig._maxWithdrawalValue;
+    }
  
 
     //** PUBLIC API **//
@@ -68,7 +111,7 @@ abstract contract WithdrawalController is BankAccount {
         require(value_ <= _getContractBalance(), 
             'Withdrawal value must be equal or less than the contract balance');
 
-        require(value_ <= _maxWithdrawalValue, 
+        require(value_ <= _getMaxWithdrawalValue(), 
             'Withdrawal value must be equal or less than the maximum defined in this contract');
 
         require(bytes(objective_).length >= 20, "The objective must have at least 20 characters");
@@ -83,7 +126,7 @@ abstract contract WithdrawalController is BankAccount {
         newWithdrawalProposal._authorized = false;
         newWithdrawalProposal._authorizations.push(_activeMembers[proposerIndex_]);
 
-        if (_minApprovalsToWithdraw <= 1) {
+        if (_getMinApprovalsToWithdrawal() <= 1) {
             newWithdrawalProposal._authorized = true;
             executeWithdrawal(proposerIndex_, newWithdrawalProposal._id);
             return;
@@ -105,7 +148,7 @@ abstract contract WithdrawalController is BankAccount {
 
                 withdrawalProposal._authorizations.push(authorizer);
 
-                if (withdrawalProposal._authorizations.length >= _minApprovalsToWithdraw) {
+                if (withdrawalProposal._authorizations.length >= _getMinApprovalsToWithdrawal()) {
                     withdrawalProposal._authorized = true;
                 }
                 break;
