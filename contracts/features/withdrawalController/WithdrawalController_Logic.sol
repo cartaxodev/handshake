@@ -2,61 +2,37 @@
 
 pragma solidity ^0.8.17;
 
-import "./../../templates/HandshakeSuperClass.sol";
+import "./../../patterns/FeatureLogic.sol";
+import "./../../templates/HandshakeSuperClass_Structs.sol";
+import "./WithdrawalController_Structs.sol";
 
-abstract contract WithdrawalController_Logic is HandshakeSuperClass {
+contract WithdrawalController_Logic is FeatureLogic {
 
     WithdrawalsConfig private _withdrawalsConfig;
     uint internal _withdrawalsIncremental;
     WithdrawalProposal[] internal _proposedWithdrawals;
     WithdrawalProposal[] internal _executedWithdrawals;
 
+/* CONTRACT INITIALIZATION FUNCTON 
+        IT MUST BE CALLED BY THE PROXY CONTRACT CONSTRUCTOR */
+    function initializeFeature (address concreteContractAddress_,
+                                Member[] memory membersList_,
+                                address[] memory withdrawalApprovers_,
+                                uint minApprovalsToWithdraw_,
+                                uint maxWithdrawValue_
+                                    ) external initializer {
+      
+        _initializeLogic(concreteContractAddress_);
+        require (minApprovalsToWithdraw_ <= membersList_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the number of active members");
+        require (minApprovalsToWithdraw_ <= withdrawalApprovers_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the total of approvers of this contract");
+        require (maxWithdrawValue_ > 0, "The maximum value of a withdrawal must be greater than zero");
 
-    /* CONTRACT INITIALIZATION FUNCTON 
-        IT MUST BE CALLED IN CONCRETE CONTRACT CONSTRUCTOR */
-    function _initWithdrawalController (
-                Member[] memory membersList_,
-                address[] memory withdrawalApprovers_,
-                uint minApprovalsToWithdraw_,
-                uint maxWithdrawValue_) internal {
-                    
-                    require (minApprovalsToWithdraw_ <= membersList_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the number of active members");
-                    require (minApprovalsToWithdraw_ <= withdrawalApprovers_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the total of approvers of this contract");
-                    require (maxWithdrawValue_ > 0, "The maximum value os a withdrawal must be grater than zero");
+        _withdrawalsConfig._minApprovalsToWithdraw = minApprovalsToWithdraw_;
+        _withdrawalsConfig._maxWithdrawalValue = maxWithdrawValue_;
+        _withdrawalsIncremental = 0;
 
-                    _withdrawalsConfig._minApprovalsToWithdraw = minApprovalsToWithdraw_;
-                    _withdrawalsConfig._maxWithdrawalValue = maxWithdrawValue_;
-                    _withdrawalsIncremental = 0;
-
-                    _addApprovers(withdrawalApprovers_, membersList_);
-                }
-
-    
-    //** STRUCTS **//
-
-    struct WithdrawalsConfig {
-        uint _minApprovalsToWithdraw;
-        uint _maxWithdrawalValue;
+        _addApprovers(withdrawalApprovers_, membersList_);
     }
-
-    struct WithdrawalProposal {
-
-        uint _id;
-        uint _value;
-        string _objective;
-        address payable _to;
-        Member _proposer;
-        Member[] _authorizations;
-        bool _authorized;
-        WithdrawalExecutionInfo _executionInfo;
-    }
-
-    struct WithdrawalExecutionInfo {
-        bool _executed;
-        uint _executionTimestamp;
-        uint _withdrawalId;
-    }
-
 
     //** PUBLIC GETTERS **//
 
@@ -109,7 +85,7 @@ abstract contract WithdrawalController_Logic is HandshakeSuperClass {
 
     function proposeWithdrawal (uint8 proposerIndex_, uint value_, string memory objective_, address payable to_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(proposerIndex_) {
 
-        require(value_ <= _getContractBalance(), 
+        require(value_ <= _concreteContract._getContractBalance(), 
             'Withdrawal value must be equal or less than the contract balance');
 
         require(value_ <= _getMaxWithdrawalValue(), 
@@ -123,9 +99,9 @@ abstract contract WithdrawalController_Logic is HandshakeSuperClass {
         newWithdrawalProposal._value = value_;
         newWithdrawalProposal._objective = objective_;
         newWithdrawalProposal._to = to_;
-        newWithdrawalProposal._proposer = _activeMembers[proposerIndex_];
+        newWithdrawalProposal._proposer = _concreteContract.getActiveMembers()[proposerIndex_];
         newWithdrawalProposal._authorized = false;
-        newWithdrawalProposal._authorizations.push(_activeMembers[proposerIndex_]);
+        newWithdrawalProposal._authorizations.push(_concreteContract.getActiveMembers()[proposerIndex_]);
 
         if (_getMinApprovalsToWithdrawal() <= 1) {
             newWithdrawalProposal._authorized = true;
@@ -141,7 +117,7 @@ abstract contract WithdrawalController_Logic is HandshakeSuperClass {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
                 
                 WithdrawalProposal storage withdrawalProposal = _proposedWithdrawals[i];
-                Member storage authorizer = _activeMembers[authorizerIndex_];
+                Member memory authorizer = _concreteContract.getActiveMembers()[authorizerIndex_];
 
                 for (uint j = 0; j < withdrawalProposal._authorizations.length; j++) {
                     require (withdrawalProposal._authorizations[j]._id != authorizer._id, "A member cannot authorize a withdrawal twice");
@@ -170,15 +146,15 @@ abstract contract WithdrawalController_Logic is HandshakeSuperClass {
             if (w._id == withdrawalProposalId_) {
 
                 require(w._authorized && !w._executionInfo._executed, "A withdrawal must be authorized and not executed yet, to be executed");
-                require(w._value <= _getContractBalance(), "There is not enough balance in this contract to execute this transaction");
+                require(w._value <= _concreteContract._getContractBalance(), "There is not enough balance in this contract to execute this transaction");
                 
                 w._executionInfo._executed = true;
                 w._executionInfo._executionTimestamp = block.timestamp;
 
                 _executedWithdrawals.push(w);
 
-                _withdraw(w._to, w._value);
-                w._executionInfo._withdrawalId = _registerWithdrawals(w._to, w._value, w._executionInfo._executionTimestamp);
+                _concreteContract._withdraw(w._to, w._value);
+                w._executionInfo._withdrawalId = _concreteContract._registerWithdrawals(w._to, w._value, w._executionInfo._executionTimestamp);
                 
                 executed = true;
                 break;

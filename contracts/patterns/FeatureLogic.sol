@@ -11,8 +11,8 @@ abstract contract FeatureLogic is Initializable, AccessControlEnumerable, Access
 
     HandshakeSuperClass internal _concreteContract;
 
-    function _initializeLogic (HandshakeSuperClass concreteContract_) internal {
-        _concreteContract = concreteContract_;
+    function _initializeLogic (address concreteContractAddress_) internal {
+        _concreteContract = HandshakeSuperClass(concreteContractAddress_);
     }
 
     modifier onlyMainAddress (uint memberIndex_) {

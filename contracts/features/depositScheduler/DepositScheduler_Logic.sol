@@ -17,14 +17,20 @@ contract DepositScheduler_Logic is FeatureLogic {
 
    /* CONTRACT INITIALIZATION FUNCTON 
         IT MUST BE CALLED BY THE PROXY CONTRACT CONSTRUCTOR */
-   function initializeFeature (HandshakeSuperClass concreteContract_,
+   function initializeFeature (address concreteContractAddress_,
                                     DeadlineControlConfig memory deadlineControlConfig_,
                                     DepositScheduling[] memory depositSchedule_
                                     ) external initializer {
       
-      _initializeLogic(concreteContract_);
+      _initializeLogic(concreteContractAddress_);
       _deadlineControlConfig = deadlineControlConfig_;
       _createDepositSchedule(depositSchedule_);
+   }
+
+   /* PUBLIC VIEW FUNCTIONS */
+
+   function getMemberSchedule (uint memberId_) {
+      
    }
 
 

@@ -1,6 +1,8 @@
 const { loadFixture, time } = require('@nomicfoundation/hardhat-network-helpers');
 const membersMock = require('../mocks/general/MembersMock.js');
-const MultimemberContractSpec = require("../features/MultimemberContract.spec.js");
+const depositScheduleMock = require('../mocks/general/DepositScheduleMock.js');
+const HandshakeSuperClassSpec = require("../templates/HandshakeSuperClass/HandshakeSuperClass.spec.js");
+const DepositSchedulerSpec = require("./../features/DepositScheduler.spec.js");
 
 
 /* FIXTURES DEFINITION */
@@ -18,6 +20,7 @@ const deployContractNotApprovedFixture = async function () {
 
     const [members, notMember] = await membersMock.getMembers();
     const memberManagers = await membersMock.getMemberManagers();
+    const depositSchedule = await depositScheduleMock.getDepositSchedule();
     const withdrawalApprovers = memberManagers;
 
     const ERC20Contract = await ethers.getContractFactory('ERC20PresetMinterPauser');
@@ -34,12 +37,13 @@ const deployContractNotApprovedFixture = async function () {
 
     const GraduationQuotaETH = await ethers.getContractFactory('GraduationQuota_ETH');
     const graduationQuotaETH = await GraduationQuotaETH.deploy("To get funds to graduation party",
-                                                               members,
-                                                               memberManagers/*,
-                                                            deadlineControlConfig,
+                                                                members,
+                                                                memberManagers,
+                                                                deadlineControlConfig,
+                                                                depositSchedule,
                                                                withdrawalApprovers,
                                                                minApprovalsToWithdraw, 
-                                                               maxWithdrawValue*/
+                                                               maxWithdrawValue
                                                                );
     await graduationQuotaETH.deployed();
 
@@ -50,11 +54,11 @@ const deployContractNotApprovedFixture = async function () {
     const graduationQuotas = [graduationQuotaETH];
         //, formaturaContractERC20];
 
-    return { graduationQuotas, erc20Token, members, notMember };
+    return { graduationQuotas, erc20Token, members, notMember, depositSchedule };
 }
 
 const contractApprovedFixture = async function () {
-    const { graduationQuotas, erc20Token, members, notMember } = await loadFixture(deployContractNotApprovedFixture);
+    const { graduationQuotas, erc20Token, members, notMember, depositSchedule } = await loadFixture(deployContractNotApprovedFixture);
 
     for (contract of graduationQuotas) {
         for (member of members) {
@@ -63,12 +67,16 @@ const contractApprovedFixture = async function () {
         }
     }
 
-    return { graduationQuotas, erc20Token, members, notMember };
+    return { graduationQuotas, erc20Token, members, notMember, depositSchedule };
 }
 
 /* SET THE FIXTURES FOR THIS TEST SCHEDULE */
-MultimemberContractSpec.setFixtures(deployContractNotApprovedFixture, 
+HandshakeSuperClassSpec.setFixtures(deployContractNotApprovedFixture, 
                                     contractApprovedFixture);
 
+DepositSchedulerSpec.setFixtures(deployContractNotApprovedFixture, 
+                                    contractApprovedFixture);                               
+
 /* DESCRIBES TEST SCHEDULE */
-describe("GraduationQuota_ETH - isMultimemberContract TESTS", MultimemberContractSpec.tests);
+describe("GraduationQuota_ETH - HandshakeSuperClass TESTS", HandshakeSuperClassSpec.tests);
+describe("GraduationQuota_ETH - DepositScheduler TESTS", DepositSchedulerSpec.tests);

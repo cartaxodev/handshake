@@ -15,7 +15,7 @@ exports.getMembers = async function() {
     const member2 = {
         signer: signer2,
         secondarySigners: [signer8],
-        _id: 0,
+        _id: 1,
         _login: 'alice',
         _mainAddress: signer2.address,
         _secondaryAddresses: [signer8.address]
@@ -23,7 +23,7 @@ exports.getMembers = async function() {
 
     const member3 = {
         signer: signer3,
-        _id: 0,
+        _id: 2,
         _login: 'john',
         _mainAddress: signer3.address,
         _secondaryAddresses: []
@@ -31,7 +31,7 @@ exports.getMembers = async function() {
 
     const member4 = {
         signer: signer4,
-        _id: 0,
+        _id: 3,
         _login: 'michael',
         _mainAddress: signer4.address,
         _secondaryAddresses: []
@@ -39,7 +39,7 @@ exports.getMembers = async function() {
 
     const member5 = {
         signer: signer5,
-        _id: 0,
+        _id: 4,
         _login: 'katie',
         _mainAddress: signer5.address,
         _secondaryAddresses: []
