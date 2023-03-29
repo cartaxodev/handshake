@@ -2,22 +2,23 @@
 
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
-import "./BankAccount.sol";
+import "./../../templates/HandshakeSuperClass.sol";
 
-abstract contract WithdrawalController is BankAccount {
+abstract contract WithdrawalController_Logic is HandshakeSuperClass {
 
     WithdrawalsConfig private _withdrawalsConfig;
     uint internal _withdrawalsIncremental;
     WithdrawalProposal[] internal _proposedWithdrawals;
     WithdrawalProposal[] internal _executedWithdrawals;
 
-    constructor (string memory objective_,
+
+    /* CONTRACT INITIALIZATION FUNCTON 
+        IT MUST BE CALLED IN CONCRETE CONTRACT CONSTRUCTOR */
+    function _initWithdrawalController (
                 Member[] memory membersList_,
-                address[] memory memberManagers_,
                 address[] memory withdrawalApprovers_,
                 uint minApprovalsToWithdraw_,
-                uint maxWithdrawValue_) BankAccount (objective_, membersList_, memberManagers_) {
+                uint maxWithdrawValue_) internal {
                     
                     require (minApprovalsToWithdraw_ <= membersList_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the number of active members");
                     require (minApprovalsToWithdraw_ <= withdrawalApprovers_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the total of approvers of this contract");
@@ -197,6 +198,4 @@ abstract contract WithdrawalController is BankAccount {
             _proposedWithdrawals.pop();
         }
     }
-
-
 }

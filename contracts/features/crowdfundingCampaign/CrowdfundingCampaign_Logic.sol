@@ -2,10 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
-import "./BankAccount.sol";
-
-abstract contract CrowdfundingCampaign is BankAccount {
+abstract contract CrowdfundingCampaign_Logic {
 
     // Função de doação
     // DefiniçÃo do valor da meta da campanha

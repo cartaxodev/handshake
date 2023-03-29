@@ -2,14 +2,13 @@
 
 pragma solidity ^0.8.17;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "./../util/AccessControlUtils.sol";
 
-abstract contract MultimemberContract is AccessControlEnumerable, AccessControlUtils {
+abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControlUtils {
     
     //Objective of this contract
-    string internal _objective;
+    string private _objective;
 
     //Members lists
     Member[] internal _activeMembers;
@@ -25,13 +24,20 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     mapping(uint => bool) private _contractApprovals;  // Member._id => approvalBoolean
     bool private _contractApproved;
 
+    //Deposits
+    Deposit[] private _depositsList;
+    uint private _depositsIncremental;
+    
+    //Withdrawals
+    Withdrawal[] private _withdrawalsList;
+    uint private _withdrawalsIncremental;
 
-    constructor (string memory objective_,
+
+    constructor(string memory objective_,
                  Member[] memory membersList_, 
                  address[] memory memberManagers_) {
 
         _objective = objective_;
-        _memberIdIncremental = 0;
 
         for (uint i = 0; i < membersList_.length; i++) {
             _addNewMember(membersList_[i]);
@@ -42,11 +48,9 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         }
     }
 
-
-    //** STRUCTS **//
+    /* STRUCTS */
 
     struct Member {
-
         uint _id; //This is a member ID valid only into the contract scope
         string _login;
         address _mainAddress;
@@ -54,7 +58,6 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     }
 
     struct MemberProposal {
-
         uint _id;
         ProposalType _proposalType;
         Member _affectedMember;
@@ -66,9 +69,34 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         EXCLUSION
     }
 
+    struct Deposit {
+        uint _id;
+        address _from;
+        uint _value;  
+        uint _depositTimestamp;
+    }
 
-    //** CUSTOM MODIFIERS **//
+    struct Withdrawal {
+        uint _id;
+        address _to;
+        uint _value;
+        uint _withdrawalTimestamp;
+    }
 
+    enum AllowedTokens {
+        ETH,
+        ERC20
+    }
+
+
+    /* CUSTOM MODIFIERS */
+
+    modifier onlyInternalFeature() {
+        require(hasRole(INTERNAL_FEATURE_ROLE, msg.sender), 
+            'Only internal features can call this function');
+        _;
+    }
+    
     modifier onlyMainAddress (uint memberIndex_) {
         require(_activeMembers[memberIndex_]._mainAddress == msg.sender, 
             'Only the main address of an active member can call this function');
@@ -76,7 +104,7 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     }
 
     modifier onlySecondaryAddress (uint memberIndex_) {
-        require (checkSecondaryAddress(memberIndex_, msg.sender), 
+        require (_checkSecondaryAddress(memberIndex_, msg.sender), 
             'Only an allowed secondary address of an active member can call this function');
         _;
     }
@@ -84,21 +112,21 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
     modifier anyMemberAddress (uint memberIndex_) {
         require(
             _activeMembers[memberIndex_]._mainAddress == msg.sender
-            || checkSecondaryAddress(memberIndex_, msg.sender),
+            || _checkSecondaryAddress(memberIndex_, msg.sender),
                 'Only the main address or an allowed secondary address of an active member can call this function'
         );
         _;
     }
 
     modifier contractApprovedForAll {
-        require(_contractApproved || _updateContractApproval(), "This contract is not aproved by all active members");
+        require(_contractApproved, "This contract is not aproved by all active members");
         _;
     }
 
 
-    //** PUBLIC VIEW GETTERS **//
+    /* PUBLIC VIEW GETTERS */
 
-    function getMembers () public view returns (Member[] memory) {
+    function getActiveMembers () public view returns (Member[] memory) {
         return _activeMembers;
     }
 
@@ -107,11 +135,38 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         return _contractApproved;
     }
 
+    function getMemberApproval (uint memberIndex_) public view returns (bool) {
+        return _contractApprovals[_activeMembers[memberIndex_]._id];
+    }
 
-    //** INTERNAL METHODS */
+    function getMemberIndex (address memberMainAddress_) public view returns (uint8) {
+        uint8 i = 0;
+        bool found = false;
 
-    /* Add a new member in active members list */
-    function _addNewMember (Member memory newMember_) internal {
+        for (i = 0; i < _activeMembers.length; i++) {
+            if (_activeMembers[i]._mainAddress == memberMainAddress_) {
+                found = true;
+                break;
+            }
+        }
+
+        require(found == true, 'This address is not a main address of an active member');
+
+        return i;
+    }
+
+     function getWithdrawals () public view returns (Withdrawal[] memory) {
+        return _withdrawalsList;
+    }
+
+    function getDeposits () public view returns (Deposit[] memory) {
+        return _depositsList;
+    }
+
+
+    /* PRIVATE FUNCTIONS */
+
+    function _addNewMember (Member memory newMember_) private {
         Member storage m = _activeMembers.push();
         
         m._id = _memberIdIncremental++;
@@ -122,7 +177,6 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         _contractApproved = false; // Each new active member needs to approve the contract
     }
 
-     /* Updates the contract approval flag */
     function _updateContractApproval () private returns (bool) {
 
         bool approved = true;
@@ -136,8 +190,14 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         return approved;
     }
 
-    /* Checks if the secondary address is in the list of secondary addresses of the member */
-    function checkSecondaryAddress (uint memberIndex_, address secondaryAddress_) internal view returns (bool) {
+    function _grantFeatureRole (address featureAddress_) internal {
+
+        _grantRole(INTERNAL_FEATURE_ROLE, featureAddress_);
+    }
+
+    /* INTERNAL FEATURES ACCESSIBLE FUNCTIONS */
+
+    function _checkSecondaryAddress (uint memberIndex_, address secondaryAddress_) public view onlyInternalFeature returns (bool) {
         bool allowed = false;
         Member storage m = _activeMembers[memberIndex_];
 
@@ -151,27 +211,59 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         return allowed;
     }
 
+    function _registerDeposit (address from_, uint value_, uint depositTimestamp_) public onlyInternalFeature returns (uint) {
+        
+        Deposit memory deposit = Deposit({
+            _id: _depositsIncremental++,
+            _from: from_,
+            _value: value_,
+            _depositTimestamp: depositTimestamp_
+        });
+
+        _depositsList.push(deposit);
+
+        return deposit._id;
+    }
+
+    function _registerWithdrawals (address to_, uint value_, uint withdrawalTimestamp_) public onlyInternalFeature returns (uint) {
+        
+        Withdrawal memory withdrawal = Withdrawal({
+            _id: _withdrawalsIncremental++,
+            _to: to_,
+            _value: value_,
+            _withdrawalTimestamp: withdrawalTimestamp_
+        });
+
+        _withdrawalsList.push(withdrawal);
+
+        return withdrawal._id;
+    }
+
+    function _getTokenType () virtual public view returns (AllowedTokens);
+    
+    function _getContractBalance () virtual public view returns (uint);
+
+    function _deposit (uint depositValue_) virtual public payable;
+
+    function _withdraw (address payable destination_, uint value_) virtual public;
+
 
     //** PUBLIC API */
 
-    /* Function that sets the member approval to true */
     function approveTheContract (uint memberIndex_) public onlyMainAddress (memberIndex_) {
         require (_contractApprovals[memberIndex_] == false, "A member only can approve a contract once.");
         _contractApprovals[memberIndex_] = true;
+        _updateContractApproval();
     }
 
-    /* Functon to add a secondary address to the list of secondary addresses of the message sender */
     function addSecondaryAddress (uint memberIndex_, address newAddress_) public onlyMainAddress (memberIndex_) {
         _activeMembers[memberIndex_]._secondaryAddresses.push(newAddress_);
     }
 
-     /* Removes a secondary address from the member's secondary addresses list */
     function removeSecondaryAddress (uint memberIndex_, address addressToBeRemoved_) public onlyMainAddress (memberIndex_) {
         // TODO: Implement
     }
 
-    /* Changes the main address of an active member. 
-    Requires a second address (msg.sender) has already been registered */
     function changeMainAddress (uint memberIndex_) public onlySecondaryAddress(memberIndex_) {
         
         Member storage m = _activeMembers[memberIndex_];
@@ -196,8 +288,6 @@ abstract contract MultimemberContract is AccessControlEnumerable, AccessControlU
         removeSecondaryAddress(m._id, msg.sender);
     }
 
-    /* Proposes the inclusion of a new member in this contract.
-    If the number os approvals required to add a new member is equal or less than one, the new member is directly added. */
     function proposeMemberInclusion (uint proposerIndex_, Member memory newMember_) public onlyMainAddress(proposerIndex_) onlyRole(MEMBER_MANAGER_ROLE) {
 
         if (_minApprovalsToAddNewMember <= 1) {
