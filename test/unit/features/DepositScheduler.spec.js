@@ -15,26 +15,31 @@ const setFixtures = function (deployContractNotApprovedFixture_,
 
 }
 
-const tests = function () {
+const tests = async function () {
+
+    const DepositScheduler_Logic_Factory = await ethers.getContractFactory('DepositScheduler_Logic');
 
     /*******************
-           CONTEXT
+           CONTEXT: DEPOSIT SCHEDULER INITIALIZATION
     *******************/
-        context('METHOD: getMemberSchedule( ... )', function () {
+    context('CONTEXT: DEPOSIT SCHEDULER INITIALIZATION', function () {
 
-            it("Should all members approve the contract", async function() {
+        it("Should deposit scheduler proxy call the fallback function and delegate to the logic contract, returning the corret value", async function() {
+            
+            const { members, graduationQuotas, depositSchedule } = await loadFixture(_deployContractNotApprovedFixture);
+            
+            for (contract of graduationQuotas) {
                 
-                const { members, graduationQuotas, depositSchedule } = await loadFixture(_deployContractNotApprovedFixture);
-                
-                for (contract of graduationQuotas) {
+                for (member of members) {
+
+                    const depositScheduler = await DepositScheduler_Logic_Factory.attach(await contract._depositScheduler());
                     
-                    for (member of members) {
-
-                        expect(await contract._depositScheduler.getMemberSchedule(member._id)._value).to.equal(1);
-                    }
+                    expect((await depositScheduler.getMemberSchedule(member._id))[0]._value).to.equal(1);
+                    expect((await depositScheduler.getMemberSchedule(member._id))[0]._executionInfo._executed).to.equal(false);
                 }
-            });
+            }
         });
+    });
 }
 
 module.exports = {setFixtures, tests};

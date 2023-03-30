@@ -29,8 +29,8 @@ contract DepositScheduler_Logic is FeatureLogic {
 
    /* PUBLIC VIEW FUNCTIONS */
 
-   function getMemberSchedule (uint memberId_) {
-      
+   function getMemberSchedule (uint memberId_) public view returns (DepositScheduling[] memory) {
+      return _depositSchedule[memberId_];
    }
 
 
