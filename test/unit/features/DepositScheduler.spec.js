@@ -40,6 +40,22 @@ const tests = async function () {
             }
         });
     });
+
+    context('CONTEXT: DEPOSIT SCHEDULER INITIALIZATION', function () {
+
+        it("Should  ......... ", async function() {
+            
+            const { members, concreteContracts, depositSchedule } = await loadFixture(_deployContractNotApprovedFixture);
+            
+            for (contract of concreteContracts) {
+                
+                for (member of members) {
+
+                    
+                }
+            }
+        });
+    });
 }
 
 module.exports = {setFixtures, tests};

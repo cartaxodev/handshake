@@ -134,16 +134,16 @@ const tests = async function () {
 
                 for (member of members) {
 
-                    const memberIndex = await contract.getMemberIndex(member._mainAddress);
+                    const memberId = await contract.getMemberId(member._mainAddress);
 
                     expect(await contract.isContractApproved()).to.equal(false);
-                    expect(await contract.getMemberApproval(memberIndex)).to.equal(false);
+                    expect(await contract.getMemberApproval(memberId)).to.equal(false);
 
                     await contract
                         .connect(member.signer)
-                        .approveTheContract(memberIndex);
+                        .approveTheContract(memberId);
 
-                    expect(await contract.getMemberApproval(memberIndex)).to.equal(true);
+                    expect(await contract.getMemberApproval(memberId)).to.equal(true);
                 }
 
                 expect(await contract.isContractApproved()).to.equal(true);
@@ -164,11 +164,11 @@ const tests = async function () {
             const bobSecondaryAddress = bob._secondaryAddresses[0];
 
             for (contract of concreteContracts) {
-                const bobIndex = await contract.getMemberIndex(bob._mainAddress);
-                await contract.connect(bob.secondarySigners[0]).changeMainAddress(bobIndex);
+                const bobId = await contract.getMemberId(bob._mainAddress);
+                await contract.connect(bob.secondarySigners[0]).changeMainAddress(bobId);
 
                 const contractMembers = await contract.getActiveMembers();
-                expect(contractMembers[bobIndex]._mainAddress).to.equal(bobSecondaryAddress);
+                expect(contractMembers[bobId]._mainAddress).to.equal(bobSecondaryAddress);
             }
         });
 
@@ -176,12 +176,12 @@ const tests = async function () {
             const { members, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
             const bob = members[0];
-            const bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            const bobId = await contract.getMemberId(bob._mainAddress);
 
             for (contract of concreteContracts) {
                 await expect(contract
                                 .connect(bob.signer)
-                                .changeMainAddress(bobIndex))
+                                .changeMainAddress(bobId))
                                 .to.be.revertedWith("Only an allowed secondary address of an active member can call this function");
             }
         });
@@ -191,12 +191,12 @@ const tests = async function () {
 
             const bob = members[0];
             const alice = members[1];
-            const bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            const bobId = await contract.getMemberId(bob._mainAddress);
 
             for (contract of concreteContracts) {
                 await expect(contract
                             .connect(alice.signer)
-                            .changeMainAddress(bobIndex))
+                            .changeMainAddress(bobId))
                             .to.be.revertedWith("Only an allowed secondary address of an active member can call this function");
                
             }
@@ -206,37 +206,37 @@ const tests = async function () {
             const { members, notMember, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
             const bob = members[0];
-            const bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            const bobId = await contract.getMemberId(bob._mainAddress);
 
             for (contract of concreteContracts) {
                 //ADD
-                await contract.connect(bob.signer).addSecondaryAddress(bobIndex, notMember._mainAddress);
+                await contract.connect(bob.signer).addSecondaryAddress(bobId, notMember._mainAddress);
                 let contractMembers = await contract.getActiveMembers();
                 
                 let addressAdded = false;
 
-                for (address of contractMembers[bobIndex]._secondaryAddresses) {
+                for (address of contractMembers[bobId]._secondaryAddresses) {
                     if (address === notMember._mainAddress) {
                         addressAdded = true;
                     }
                 }
 
-                expect (contractMembers[bobIndex]._secondaryAddresses.length).to.equal(2);
+                expect (contractMembers[bobId]._secondaryAddresses.length).to.equal(2);
                 expect (addressAdded).of.equal(true);
 
                 //REMOVE
-                await contract.connect(bob.signer).removeSecondaryAddress (bobIndex, notMember._mainAddress);
+                await contract.connect(bob.signer).removeSecondaryAddress (bobId, notMember._mainAddress);
                 contractMembers = await contract.getActiveMembers();
 
                 addressAdded = false;
 
-                for (address of contractMembers[bobIndex]._secondaryAddresses) {
+                for (address of contractMembers[bobId]._secondaryAddresses) {
                     if (address === notMember._mainAddress) {
                         addressAdded = true;
                     }
                 }
 
-                expect (contractMembers[bobIndex]._secondaryAddresses.length).to.equal(1);
+                expect (contractMembers[bobId]._secondaryAddresses.length).to.equal(1);
                 expect (addressAdded).of.equal(false);
             }
         });
@@ -245,13 +245,13 @@ const tests = async function () {
             const { members, notMember, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
             const bob = members[0];
-            bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            bobId = await contract.getMemberId(bob._mainAddress);
             const alice = members[1];
 
             for (contract of concreteContracts) {
                 await expect (contract
                                     .connect(alice.signer)
-                                    .addSecondaryAddress(bobIndex, notMember._mainAddress))
+                                    .addSecondaryAddress(bobId, notMember._mainAddress))
                                     .to.be.revertedWith("Only the main address of an active member can call this function");
             }
         });
@@ -260,12 +260,12 @@ const tests = async function () {
             const { members, notMember, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
             const bob = members[0];
-            bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            bobId = await contract.getMemberId(bob._mainAddress);
 
             for (contract of concreteContracts) {
                 await expect (contract
                                     .connect(bob.signer)
-                                    .addSecondaryAddress(bobIndex, bob._mainAddress))
+                                    .addSecondaryAddress(bobId, bob._mainAddress))
                                     .to.be.revertedWith("This address is already in use");
             }
         });
@@ -274,12 +274,12 @@ const tests = async function () {
             const { members, notMember, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
             const bob = members[0];
-            bobIndex = await contract.getMemberIndex(bob._mainAddress);
+            bobId = await contract.getMemberId(bob._mainAddress);
 
             for (contract of concreteContracts) {
                 await expect (contract
                                     .connect(bob.signer)
-                                    .removeSecondaryAddress(bobIndex, notMember._mainAddress))
+                                    .removeSecondaryAddress(bobId, notMember._mainAddress))
                                     .to.be.revertedWith("Address not found");
             }
         });

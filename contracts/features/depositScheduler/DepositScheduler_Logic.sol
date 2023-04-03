@@ -8,7 +8,7 @@ import "./../../patterns/FeatureLogic.sol";
 contract DepositScheduler_Logic is FeatureLogic {
 
    // Deposits Schedule
-   mapping (uint => DepositScheduling[]) private _depositSchedule;
+   mapping (uint => DepositScheduling[]) private _depositSchedule; // memberId --> Schedule
    bool private _scheduleCreated;
 
    // Deadline and fees control
@@ -55,16 +55,16 @@ contract DepositScheduler_Logic is FeatureLogic {
       _scheduleCreated = true;
    }
 
-   function _getNextPendingDeposit (uint8 memberIndex_) internal view returns (DepositScheduling storage) {
+   function _getNextPendingDeposit (uint8 memberId_) private view returns (DepositScheduling storage) {
         
-      DepositScheduling[] storage memberSchedule = _depositSchedule[memberIndex_];
+      DepositScheduling[] storage memberSchedule = _depositSchedule[memberId_];
       DepositScheduling storage pendingDeposit = memberSchedule[0];
       bool havePendingDeposits = false;
 
       for (uint i = 0; i < memberSchedule.length; i++) {
          
          if (memberSchedule[i]._executionInfo._executed == false) {
-
+ 
             pendingDeposit = memberSchedule[i];
             havePendingDeposits = true;
             break;
@@ -77,13 +77,18 @@ contract DepositScheduler_Logic is FeatureLogic {
 
    function _getLateDepositFee(DepositScheduling memory depositScheduling_) internal pure returns (uint) {
       //TODO: Implement
+      return 0;
    }
 
 
    //** PUBLIC API **//
 
-   function payNextDeposit (uint8 memberIndex_) public payable contractApprovedForAll anyMemberAddress(memberIndex_) {
-      DepositScheduling storage nextDeposit = _getNextPendingDeposit(memberIndex_);
+   function getNextPendingDeposit (uint8 memberId_) public view returns (DepositScheduling memory) {
+      return _getNextPendingDeposit(memberId_);
+   }
+
+   function payNextDeposit (uint8 memberId_) public payable contractApprovedForAll onlyMainAddress(memberId_) {
+      DepositScheduling storage nextDeposit = _getNextPendingDeposit(memberId_);
       
       if (_deadlineControlConfig._isControlActive) {
          nextDeposit._executionInfo._lateDepositFee = _getLateDepositFee(nextDeposit);

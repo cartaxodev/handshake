@@ -83,7 +83,7 @@ contract WithdrawalController_Logic is FeatureLogic {
 
     //** PUBLIC API **//
 
-    function proposeWithdrawal (uint8 proposerIndex_, uint value_, string memory objective_, address payable to_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(proposerIndex_) {
+    function proposeWithdrawal (uint8 proposerId_, uint value_, string memory objective_, address payable to_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(proposerId_) {
 
         require(value_ <= _concreteContract._getContractBalance(), 
             'Withdrawal value must be equal or less than the contract balance');
@@ -99,25 +99,25 @@ contract WithdrawalController_Logic is FeatureLogic {
         newWithdrawalProposal._value = value_;
         newWithdrawalProposal._objective = objective_;
         newWithdrawalProposal._to = to_;
-        newWithdrawalProposal._proposer = _concreteContract.getActiveMembers()[proposerIndex_];
+        newWithdrawalProposal._proposer = _concreteContract.getActiveMembers()[proposerId_];
         newWithdrawalProposal._authorized = false;
-        newWithdrawalProposal._authorizations.push(_concreteContract.getActiveMembers()[proposerIndex_]);
+        newWithdrawalProposal._authorizations.push(_concreteContract.getActiveMembers()[proposerId_]);
 
         if (_getMinApprovalsToWithdrawal() <= 1) {
             newWithdrawalProposal._authorized = true;
-            executeWithdrawal(proposerIndex_, newWithdrawalProposal._id);
+            executeWithdrawal(proposerId_, newWithdrawalProposal._id);
             return;
         }
     }
 
 
-    function authorizeWithdrawal (uint8 authorizerIndex_, uint withdrawId_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(authorizerIndex_) {
+    function authorizeWithdrawal (uint8 authorizerId_, uint withdrawId_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(authorizerId_) {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawId_) {
                 
                 WithdrawalProposal storage withdrawalProposal = _proposedWithdrawals[i];
-                Member memory authorizer = _concreteContract.getActiveMembers()[authorizerIndex_];
+                Member memory authorizer = _concreteContract.getActiveMembers()[authorizerId_];
 
                 for (uint j = 0; j < withdrawalProposal._authorizations.length; j++) {
                     require (withdrawalProposal._authorizations[j]._id != authorizer._id, "A member cannot authorize a withdrawal twice");
@@ -134,7 +134,7 @@ contract WithdrawalController_Logic is FeatureLogic {
     }
 
 
-    function executeWithdrawal (uint8 memberIndex_, uint withdrawalProposalId_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(memberIndex_) {
+    function executeWithdrawal (uint8 memberId_, uint withdrawalProposalId_) public onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(memberId_) {
 
         uint i;
         bool executed = false;

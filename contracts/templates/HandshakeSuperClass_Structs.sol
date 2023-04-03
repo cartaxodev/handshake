@@ -11,6 +11,11 @@ pragma solidity ^0.8.17;
         address[] _secondaryAddresses;
     }
 
+    struct MemberMap {
+        uint[] _ids;
+        mapping (uint => Member) _values;
+    }
+
     struct MemberProposal {
         uint _id;
         ProposalType _proposalType;
