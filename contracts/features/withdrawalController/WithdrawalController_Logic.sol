@@ -154,7 +154,7 @@ contract WithdrawalController_Logic is FeatureLogic {
                 _executedWithdrawals.push(w);
 
                 _concreteContract._withdraw(w._to, w._value);
-                w._executionInfo._withdrawalId = _concreteContract._registerWithdrawals(w._to, w._value, w._executionInfo._executionTimestamp);
+                w._executionInfo._withdrawalId = _concreteContract._registerWithdrawal(w._to, w._value, w._executionInfo._executionTimestamp);
                 
                 executed = true;
                 break;

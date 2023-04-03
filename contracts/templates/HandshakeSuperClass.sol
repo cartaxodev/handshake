@@ -15,6 +15,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     Member[] internal _activeMembers;
     Member[] private _inactiveMembers;
     uint private _memberIdIncremental;
+    mapping(address => bool) private _usedAddresses;
 
     //Changes on members lists
     MemberProposal[] private _memberInclusionProposals;
@@ -33,6 +34,8 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     Withdrawal[] private _withdrawalsList;
     uint private _withdrawalsIncremental;
 
+    //Allowed-access Feature Proxies
+    address[] public _featureProxies;
 
     constructor(string memory objective_,
                  Member[] memory membersList_, 
@@ -64,7 +67,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     }
 
     modifier onlySecondaryAddress (uint memberIndex_) {
-        require (_checkSecondaryAddress(memberIndex_, msg.sender), 
+        require (_internalCheckSecondaryAddress(memberIndex_, msg.sender), 
             'Only an allowed secondary address of an active member can call this function');
         _;
     }
@@ -72,7 +75,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     modifier anyMemberAddress (uint memberIndex_) {
         require(
             _activeMembers[memberIndex_]._mainAddress == msg.sender
-            || _checkSecondaryAddress(memberIndex_, msg.sender),
+            || _internalCheckSecondaryAddress(memberIndex_, msg.sender),
                 'Only the main address or an allowed secondary address of an active member can call this function'
         );
         _;
@@ -89,7 +92,6 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     function getActiveMembers () public view returns (Member[] memory) {
         return _activeMembers;
     }
-
 
     function isContractApproved () public view returns (bool) {
         return _contractApproved;
@@ -123,10 +125,25 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         return _depositsList;
     }
 
+    function getFeatureProxies() public view returns (address[] memory) {
+        return _featureProxies;
+    }
+
 
     /* PRIVATE FUNCTIONS */
 
     function _addNewMember (Member memory newMember_) private {
+        
+        /* Testing if all addresses used by the member are unike in this contract - 
+        i.e. None of the members had used this address before*/
+        require (_usedAddresses[newMember_._mainAddress] == false, "This address is already in use");
+        _usedAddresses[newMember_._mainAddress] = true;
+
+        for (uint i=0; i < newMember_._secondaryAddresses.length; i++) {
+            require (_usedAddresses[newMember_._secondaryAddresses[i]] == false, "This address is already in use");
+            _usedAddresses[newMember_._secondaryAddresses[i]] = true;
+        }
+
         Member storage m = _activeMembers.push();
         
         m._id = _memberIdIncremental++;
@@ -135,6 +152,20 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         m._secondaryAddresses = newMember_._secondaryAddresses;
 
         _contractApproved = false; // Each new active member needs to approve the contract
+    }
+
+    function _internalCheckSecondaryAddress (uint memberIndex_, address secondaryAddress_) private view  returns (bool) {
+        bool allowed = false;
+        Member storage m = _activeMembers[memberIndex_];
+
+        for (uint i = 0; i < m._secondaryAddresses.length; i++) {
+            if (m._secondaryAddresses[i] == secondaryAddress_) {
+                allowed = true;
+                break;
+            }
+        }
+
+        return allowed;
     }
 
     function _updateContractApproval () private returns (bool) {
@@ -151,24 +182,15 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     }
 
     function _grantFeatureRole (address featureAddress_) internal {
-
         _grantRole(INTERNAL_FEATURE_ROLE, featureAddress_);
+        _featureProxies.push(featureAddress_);
     }
 
     /* INTERNAL FEATURES ACCESSIBLE FUNCTIONS */
 
     function _checkSecondaryAddress (uint memberIndex_, address secondaryAddress_) public view onlyInternalFeature returns (bool) {
-        bool allowed = false;
-        Member storage m = _activeMembers[memberIndex_];
 
-        for (uint i = 0; i < m._secondaryAddresses.length; i++) {
-            if (m._secondaryAddresses[i] == secondaryAddress_) {
-                allowed = true;
-                break;
-            }
-        }
-
-        return allowed;
+        return _internalCheckSecondaryAddress(memberIndex_, secondaryAddress_);
     }
 
     function _registerDeposit (address from_, uint value_, uint depositTimestamp_) public onlyInternalFeature returns (uint) {
@@ -185,7 +207,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         return deposit._id;
     }
 
-    function _registerWithdrawals (address to_, uint value_, uint withdrawalTimestamp_) public onlyInternalFeature returns (uint) {
+    function _registerWithdrawal (address to_, uint value_, uint withdrawalTimestamp_) public onlyInternalFeature returns (uint) {
         
         Withdrawal memory withdrawal = Withdrawal({
             _id: _withdrawalsIncremental++,
@@ -217,11 +239,34 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     }
 
     function addSecondaryAddress (uint memberIndex_, address newAddress_) public onlyMainAddress (memberIndex_) {
+        require (_usedAddresses[newAddress_] == false, "This address is already in use");
         _activeMembers[memberIndex_]._secondaryAddresses.push(newAddress_);
+        _usedAddresses[newAddress_] = true;
     }
 
     function removeSecondaryAddress (uint memberIndex_, address addressToBeRemoved_) public onlyMainAddress (memberIndex_) {
         // TODO: Implement
+
+        address[] storage secondaryAddresses = _activeMembers[memberIndex_]._secondaryAddresses;
+        uint i = 0;
+        bool found = false;
+
+        for (i=0; i < secondaryAddresses.length; i++) {
+            if (secondaryAddresses[i] == addressToBeRemoved_) {
+                found = true;
+                break;
+            }
+        }
+        
+        require(found == true, "Address not found");
+        if (i == (secondaryAddresses.length - 1)) {
+            secondaryAddresses.pop();
+
+        } else {
+            secondaryAddresses[i] = secondaryAddresses[secondaryAddresses.length - 1];
+            secondaryAddresses.pop();
+        }
+        _usedAddresses[addressToBeRemoved_] = false;
     }
 
     function changeMainAddress (uint memberIndex_) public onlySecondaryAddress(memberIndex_) {

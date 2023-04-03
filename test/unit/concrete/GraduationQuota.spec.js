@@ -51,23 +51,23 @@ const deployContractNotApprovedFixture = async function () {
     // const formaturaContractERC20 = await FormaturaContractERC20.deploy(members, minCommiteMembersToWithdraw, maxWithdrawValue, erc20Token.address);
     // await formaturaContractERC20.deployed();
 
-    const graduationQuotas = [graduationQuotaETH];
+    const concreteContracts = [graduationQuotaETH];
         //, formaturaContractERC20];
 
-    return { graduationQuotas, erc20Token, members, notMember, depositSchedule };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, depositSchedule };
 }
 
 const contractApprovedFixture = async function () {
-    const { graduationQuotas, erc20Token, members, notMember, depositSchedule } = await loadFixture(deployContractNotApprovedFixture);
+    const { concreteContracts, erc20Token, members, notMember, memberManagers, depositSchedule } = await loadFixture(deployContractNotApprovedFixture);
 
-    for (contract of graduationQuotas) {
+    for (contract of concreteContracts) {
         for (member of members) {
             const memberIndex = await contract.getMemberIndex(member._mainAddress);
             await contract.connect(member.signer).approveTheContract(memberIndex);
         }
     }
 
-    return { graduationQuotas, erc20Token, members, notMember, depositSchedule };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, depositSchedule };
 }
 
 /* SET THE FIXTURES FOR THIS TEST SCHEDULE */

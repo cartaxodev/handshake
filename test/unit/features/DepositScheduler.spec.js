@@ -26,9 +26,9 @@ const tests = async function () {
 
         it("Should deposit scheduler proxy call the fallback function and delegate to the logic contract, returning the corret value", async function() {
             
-            const { members, graduationQuotas, depositSchedule } = await loadFixture(_deployContractNotApprovedFixture);
+            const { members, concreteContracts, depositSchedule } = await loadFixture(_deployContractNotApprovedFixture);
             
-            for (contract of graduationQuotas) {
+            for (contract of concreteContracts) {
                 
                 for (member of members) {
 
