@@ -16,22 +16,13 @@ abstract contract FeatureLogic is Initializable, AccessControlEnumerable, Access
     }
 
     modifier onlyMainAddress (uint memberId_) {
-        // Member[] memory activeMembers = _concreteContract.getActiveMembers();
-        // Member memory selectedMember;
-        // for (uint i = 0; i < activeMembers.length; i++) {
-        //     if (activeMembers[i]._id == memberId_) {
-        //         selectedMember = activeMembers[i];
-        //         break;
-        //     }
-        // }
-        // require (selectedMember._mainAddress == msg.sender, "Only the main address of an active member can call this function");
-        require (_concreteContract._checkMainAddress(memberId_, msg.sender), 
+        require (_concreteContract.__checkMainAddress(memberId_, msg.sender), 
                         "Only the main address of an active member can call this function");
         _;
     }
 
      modifier onlySecondaryAddress (uint memberId_) {
-        require (_concreteContract._checkSecondaryAddress(memberId_, msg.sender), 
+        require (_concreteContract.__checkSecondaryAddress(memberId_, msg.sender), 
             'Only an allowed secondary address of an active member can call this function');
         _;
     }

@@ -13,20 +13,22 @@ abstract contract HandshakeSuperClass_ETH is HandshakeSuperClass {
                  address[] memory memberManagers_) HandshakeSuperClass (objective_, membersList_, memberManagers_) {
     }
 
-    function _getTokenType () override public pure returns (AllowedTokens) {
+    function getTokenType () override public pure returns (AllowedTokens) {
         return _tokenType;
     }
 
-    function _getContractBalance () override public view returns (uint) {
+    function getContractBalance () override public view returns (uint) {
         return address(this).balance;
     }
 
-    function _deposit (uint depositValue_) override public payable onlyInternalFeature {
-        require(msg.value == depositValue_, 'The transaction value must be equal to the deposit value');
+    function __deposit (address payable from_, uint value_) override public payable onlyInternalFeature returns (uint) {
+        require(msg.value == value_, 'The transaction value must be equal to the deposit value');
+        return _registerDeposit(from_, value_, block.timestamp);
     }
 
-    function _withdraw(address payable destination_, uint value_) override public onlyInternalFeature {
-        destination_.transfer(value_);
+    function __withdraw(address payable to_, uint value_) override public onlyInternalFeature returns (uint) {
+        to_.transfer(value_);
+        return _registerWithdrawal(to_, value_, block.timestamp);
     }
 
 

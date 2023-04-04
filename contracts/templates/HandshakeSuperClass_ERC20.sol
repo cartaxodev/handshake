@@ -20,24 +20,27 @@ abstract contract HandshakeSuperClass_ERC20 is HandshakeSuperClass {
         _token = IERC20(tokenAddress_);
     }
 
-    function _getTokenType () override public pure returns (AllowedTokens) {
+    function getTokenType () override public pure returns (AllowedTokens) {
         return _tokenType;
     }
 
-    function _getContractBalance () override public view returns (uint) {
+    function getContractBalance () override public view returns (uint) {
         return _token.balanceOf(address(this));
     }
 
-    function _deposit (uint depositValue_) override public payable onlyInternalFeature {
+    function __deposit (address payable from_, uint value_) override public payable onlyInternalFeature returns (uint) {
         //require(msg.value == paymentValue_, 'The transaction value must be equal to the payment value');
-        require(depositValue_ > 0, "Deposit value must be greater than zero");
+        require(value_ > 0, "Deposit value must be greater than zero");
         uint256 allowance = _token.allowance(msg.sender, address(this));
-        require(allowance >= depositValue_, "This contract has not enough allowance to execute this deposit");
-        _token.transferFrom(msg.sender, address(this), depositValue_);
+        require(allowance >= value_, "This contract has not enough allowance to execute this deposit");
+        _token.transferFrom(msg.sender, address(this), value_);
+        return _registerDeposit(from_, value_, block.timestamp);
+
     }
 
-    function _withdraw(address payable destination_, uint value_) override public onlyInternalFeature {
-        _token.transfer(destination_, value_);
+    function __withdraw(address payable to_, uint value_) override public onlyInternalFeature returns (uint) {
+        _token.transfer(to_, value_);
+        return _registerWithdrawal(to_, value_, block.timestamp);
     }
 
 

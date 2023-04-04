@@ -95,8 +95,7 @@ contract DepositScheduler_Logic is FeatureLogic {
          nextDeposit._executionInfo._finalValue = (nextDeposit._executionInfo._principalValue + nextDeposit._executionInfo._lateDepositFee);
       }
 
-      _concreteContract._deposit(nextDeposit._executionInfo._finalValue);
-      uint depositId = _concreteContract._registerDeposit(msg.sender, nextDeposit._value, block.timestamp);
+      uint depositId = _concreteContract.__deposit(payable(msg.sender), nextDeposit._executionInfo._finalValue);
       nextDeposit._executionInfo._executed = true;
       nextDeposit._executionInfo._depositId = depositId;
    }

@@ -9,6 +9,8 @@ const DepositSchedulerSpec = require("./../features/DepositScheduler.spec.js");
 
 const deployContractNotApprovedFixture = async function () {
 
+    const minApprovalsToAddNewMember = 2;
+    const minApprovalsToRemoveMember = 2;
     const minApprovalsToWithdraw = 2;
     const maxWithdrawValue = 5;
     const deadlineControlConfig = {
@@ -28,17 +30,19 @@ const deployContractNotApprovedFixture = async function () {
     const erc20Token = await ERC20Contract.connect(erc20TokenOwner).deploy("Rodrigo_Token", "RCMD");
     await erc20Token.deployed();
 
-    // await erc20Token.connect(erc20TokenOwner).mint(members[0]._mainAddress, 100);
-    // await erc20Token.connect(erc20TokenOwner).mint(members[0]._secondaryAddresses[0], 100);
-    // await erc20Token.connect(erc20TokenOwner).mint(members[1]._mainAddress, 100);
-    // await erc20Token.connect(erc20TokenOwner).mint(members[2]._mainAddress, 100);
-    // await erc20Token.connect(erc20TokenOwner).mint(members[3]._mainAddress, 100);
-    // await erc20Token.connect(erc20TokenOwner).mint(members[4]._mainAddress, 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[0]._mainAddress, 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[0]._secondaryAddresses[0], 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[1]._mainAddress, 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[2]._mainAddress, 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[3]._mainAddress, 100);
+    await erc20Token.connect(erc20TokenOwner).mint(members[4]._mainAddress, 100);
 
     const GraduationQuotaETH = await ethers.getContractFactory('GraduationQuota_ETH');
     const graduationQuotaETH = await GraduationQuotaETH.deploy("To get funds to graduation party",
                                                                 members,
                                                                 memberManagers,
+                                                                minApprovalsToAddNewMember,
+                                                                minApprovalsToRemoveMember,
                                                                 deadlineControlConfig,
                                                                 depositSchedule,
                                                                withdrawalApprovers,
@@ -47,12 +51,22 @@ const deployContractNotApprovedFixture = async function () {
                                                                );
     await graduationQuotaETH.deployed();
 
-    // const FormaturaContractERC20 = await ethers.getContractFactory('FormaturaContractERC20');
-    // const formaturaContractERC20 = await FormaturaContractERC20.deploy(members, minCommiteMembersToWithdraw, maxWithdrawValue, erc20Token.address);
-    // await formaturaContractERC20.deployed();
+    const GraduationQuotaERC20 = await ethers.getContractFactory('GraduationQuota_ERC20');
+    const graduationQuotaERC20 = await GraduationQuotaERC20.deploy("To get funds to graduation party",
+                                                                    members,
+                                                                    memberManagers,
+                                                                    erc20Token.address,
+                                                                    minApprovalsToAddNewMember,
+                                                                    minApprovalsToRemoveMember,
+                                                                    deadlineControlConfig,
+                                                                    depositSchedule,
+                                                                withdrawalApprovers,
+                                                                minApprovalsToWithdraw, 
+                                                                maxWithdrawValue
+                                                                );
+    await graduationQuotaERC20.deployed();
 
-    const concreteContracts = [graduationQuotaETH];
-        //, formaturaContractERC20];
+    const concreteContracts = [graduationQuotaETH, graduationQuotaERC20];
 
     return { concreteContracts, erc20Token, members, notMember, memberManagers, depositSchedule };
 }

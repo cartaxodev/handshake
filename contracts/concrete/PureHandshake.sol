@@ -11,24 +11,24 @@ contract PureHandshake is HandshakeSuperClass {
                  address[] memory memberManagers_)
                      HandshakeSuperClass (objective_, membersList_, memberManagers_) {}
 
-    function _getTokenType()
+    function getTokenType()
         public
         view
         override
         returns (AllowedTokens)
     {}
 
-    function _getContractBalance()
+    function getContractBalance()
         public
         view
         override
         returns (uint)
     {}
 
-    function _deposit(uint depositValue_) public payable override {}
+    function __deposit(address payable from_, uint value_) public payable override onlyInternalFeature returns (uint) {}
 
-    function _withdraw(
-        address payable destination_,
+    function __withdraw(
+        address payable to_,
         uint value_
-    ) public override {}
+    ) public override onlyInternalFeature returns (uint) {}
 }

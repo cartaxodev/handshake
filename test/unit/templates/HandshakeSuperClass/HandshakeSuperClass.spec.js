@@ -394,11 +394,11 @@ const tests = async function () {
     context('CONTEXT: FUNCTIONS WITH ONLY INTERNAL FEATURE ACCESS', function () {
 
         it("Should a registered feature-contract be able to access controlled functions", async function() {
-            //_checkSecondaryAddress
-            //_registerDeposit
-            //_registerWithdrawal
-            //_deposit
-            //_withdraw
+            //__checkSecondaryAddress
+            //__registerDeposit
+            //__registerWithdrawal
+            //__deposit
+            //__withdraw
 
             const { members, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
             
@@ -411,7 +411,7 @@ const tests = async function () {
                     const featureSigner = await contract.provider.getSigner(feature);
                     
                     //_checkSecondaryAddress
-                    expect (await contract.connect(featureSigner)._checkSecondaryAddress(0, feature)).to.equal(false);
+                    expect (await contract.connect(featureSigner).__checkSecondaryAddress(0, feature)).to.equal(false);
 
                     //_registerDeposit (TODO: PESQUISAR PORQUE ESTÁ DANDO ERRO)
                     // console.log(feature);
@@ -423,11 +423,6 @@ const tests = async function () {
         });
 
         it("Should revert because is not an allowed feature-contract", async function() {
-            //_checkSecondaryAddress
-            //_registerDeposit
-            //_registerWithdrawal
-            //_deposit
-            //_withdraw
 
             const { members, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
@@ -435,11 +430,11 @@ const tests = async function () {
 
                 const bob = members[0];
 
-                await expect (contract.connect(bob.signer)._checkSecondaryAddress(0, bob._mainAddress)).to.be.revertedWith("Only internal features can call this function");
-                await expect (contract.connect(bob.signer)._registerDeposit(bob._mainAddress, 1, 0)).to.be.revertedWith("Only internal features can call this function");
-                await expect (contract.connect(bob.signer)._registerWithdrawal(bob._mainAddress, 1, 0)).to.be.revertedWith("Only internal features can call this function");
-                await expect (contract.connect(bob.signer)._deposit(bob._mainAddress, {value: 1})).to.be.revertedWith("Only internal features can call this function");
-                await expect (contract.connect(bob.signer)._withdraw(bob._mainAddress, 1)).to.be.revertedWith("Only internal features can call this function");
+                await expect (contract.connect(bob.signer).__addNewMember(bob)).to.be.revertedWith("Only internal features can call this function");
+                await expect (contract.connect(bob.signer).__checkMainAddress(0, bob._mainAddress)).to.be.revertedWith("Only internal features can call this function");
+                await expect (contract.connect(bob.signer).__checkSecondaryAddress(0, bob._mainAddress)).to.be.revertedWith("Only internal features can call this function");
+                await expect (contract.connect(bob.signer).__deposit(bob._mainAddress, 1, {value: 1})).to.be.revertedWith("Only internal features can call this function");
+                await expect (contract.connect(bob.signer).__withdraw(bob._mainAddress, 1)).to.be.revertedWith("Only internal features can call this function");
             }
         });
     });

@@ -11,16 +11,9 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     //Objective of this contract
     string private _objective;
 
-    //Members lists
-    MemberMap internal _activeMembers;
-    Member[] private _inactiveMembers;
+    //Members
+    MemberMap internal _members;
     uint private _memberIdIncremental;
-    mapping(address => bool) private _usedAddresses;
-
-    //Changes on members lists
-    MemberProposal[] private _memberInclusionProposals;
-    uint private _memberInclusionProposalsIncremental;
-    uint private _minApprovalsToAddNewMember;
 
     //Contract Approvals
     mapping(uint => bool) private _contractApprovals;  // Member._id => approvalBoolean
@@ -61,13 +54,13 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     }
     
     modifier onlyMainAddress (uint memberId_) {
-        require(_internalCheckMainAddress(memberId_, msg.sender), 
+        require(_checkMainAddress(memberId_, msg.sender), 
             'Only the main address of an active member can call this function');
         _;
     }
 
     modifier onlySecondaryAddress (uint memberId_) {
-        require (_internalCheckSecondaryAddress(memberId_, msg.sender), 
+        require (_checkSecondaryAddress(memberId_, msg.sender), 
             'Only an allowed secondary address of an active member can call this function');
         _;
     }
@@ -81,11 +74,33 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     /* PUBLIC VIEW GETTERS */
 
     function getActiveMembers () public view returns (Member[] memory) {
-        Member[] memory result = new Member[](_activeMembers._ids.length);
-        for (uint i = 0; i < _activeMembers._ids.length; i++) {
-            result[i] = _activeMembers._values[_activeMembers._ids[i]];
+        Member[] memory result = new Member[](_members._activeIds.length);
+        for (uint i = 0; i < _members._activeIds.length; i++) {
+            result[i] = _members._values[_members._activeIds[i]];
         }
         return result;
+    }
+
+    function getMemberById (uint memberId_) public view returns (Member memory) {
+        return _members._values[memberId_];
+    }
+
+    function getMemberId (address memberMainAddress_) public view returns (uint) {
+        uint8 i = 0;
+        bool found = false;
+        uint id = 0;
+
+        for (i = 0; i < _members._activeIds.length; i++) {
+            if (_members._values[_members._activeIds[i]]._mainAddress == memberMainAddress_) {
+                found = true;
+                id = _members._activeIds[i];
+                break;
+            }
+        }
+
+        require(found == true, 'This address is not a main address of an active member');
+
+        return id;
     }
 
     function isContractApproved () public view returns (bool) {
@@ -94,24 +109,6 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
 
     function getMemberApproval (uint memberId_) public view returns (bool) {
         return _contractApprovals[memberId_];
-    }
-
-    function getMemberId (address memberMainAddress_) public view returns (uint) {
-        uint8 i = 0;
-        bool found = false;
-        uint id = 0;
-
-        for (i = 0; i < _activeMembers._ids.length; i++) {
-            if (_activeMembers._values[_activeMembers._ids[i]]._mainAddress == memberMainAddress_) {
-                found = true;
-                id = _activeMembers._ids[i];
-                break;
-            }
-        }
-
-        require(found == true, 'This address is not a main address of an active member');
-
-        return id;
     }
 
      function getWithdrawals () public view returns (Withdrawal[] memory) {
@@ -133,17 +130,17 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         
         /* Testing if all addresses used by the member are unike in this contract - 
         i.e. None of the members had used this address before*/
-        require (_usedAddresses[newMember_._mainAddress] == false, "This address is already in use");
-        _usedAddresses[newMember_._mainAddress] = true;
+        require (_members._usedAddresses[newMember_._mainAddress] == false, "This address is already in use");
+        _members._usedAddresses[newMember_._mainAddress] = true;
 
         for (uint i=0; i < newMember_._secondaryAddresses.length; i++) {
-            require (_usedAddresses[newMember_._secondaryAddresses[i]] == false, "This address is already in use");
-            _usedAddresses[newMember_._secondaryAddresses[i]] = true;
+            require (_members._usedAddresses[newMember_._secondaryAddresses[i]] == false, "This address is already in use");
+            _members._usedAddresses[newMember_._secondaryAddresses[i]] = true;
         }
 
         uint memberId = _memberIdIncremental++;
-        Member storage m = _activeMembers._values[memberId];  //Creating the member into the mapping
-        _activeMembers._ids.push(memberId);                   //Registering member ID into the array
+        Member storage m = _members._values[memberId];  //Creating the member into the mapping
+        _members._activeIds.push(memberId);                   //Registering member ID into the array
         
         m._id = memberId;
         m._login = newMember_._login;
@@ -153,13 +150,13 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         _contractApproved = false; // Each new active member needs to approve the contract
     }
 
-    function _internalCheckMainAddress (uint memberId_, address mainAddress_) private view returns (bool) {
-        return (_activeMembers._values[memberId_]._mainAddress == mainAddress_);
+    function _checkMainAddress (uint memberId_, address mainAddress_) private view returns (bool) {
+        return (_members._values[memberId_]._mainAddress == mainAddress_);
     }
 
-    function _internalCheckSecondaryAddress (uint memberId_, address secondaryAddress_) private view  returns (bool) {
+    function _checkSecondaryAddress (uint memberId_, address secondaryAddress_) private view  returns (bool) {
         bool allowed = false;
-        Member storage m = _activeMembers._values[memberId_];
+        Member storage m = _members._values[memberId_];
 
         for (uint i = 0; i < m._secondaryAddresses.length; i++) {
             if (m._secondaryAddresses[i] == secondaryAddress_) {
@@ -174,8 +171,8 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     function _updateContractApproval () private returns (bool) {
 
         bool approved = true;
-        for (uint i = 0; i < _activeMembers._ids.length; i++) {
-            if (_contractApprovals[_activeMembers._ids[i]] == false) {
+        for (uint i = 0; i < _members._activeIds.length; i++) {
+            if (_contractApprovals[_members._activeIds[i]] == false) {
                 approved = false;
                 break;
             }
@@ -189,17 +186,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         _featureProxies.push(featureAddress_);
     }
 
-    /* INTERNAL FEATURES ACCESSIBLE FUNCTIONS */
-
-    function _checkMainAddress (uint memberId_, address mainAddress_) public view onlyInternalFeature returns (bool) {
-        return _internalCheckMainAddress(memberId_, mainAddress_);
-    }
-
-    function _checkSecondaryAddress (uint memberId_, address secondaryAddress_) public view onlyInternalFeature returns (bool) {
-        return _internalCheckSecondaryAddress(memberId_, secondaryAddress_);
-    }
-
-    function _registerDeposit (address from_, uint value_, uint depositTimestamp_) public onlyInternalFeature returns (uint) {
+    function _registerDeposit (address from_, uint value_, uint depositTimestamp_) internal returns (uint) {
         
         Deposit memory deposit = Deposit({
             _id: _depositsIncremental++,
@@ -213,7 +200,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         return deposit._id;
     }
 
-    function _registerWithdrawal (address to_, uint value_, uint withdrawalTimestamp_) public onlyInternalFeature returns (uint) {
+    function _registerWithdrawal (address to_, uint value_, uint withdrawalTimestamp_) internal returns (uint) {
         
         Withdrawal memory withdrawal = Withdrawal({
             _id: _withdrawalsIncremental++,
@@ -227,13 +214,23 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         return withdrawal._id;
     }
 
-    function _getTokenType () virtual public view returns (AllowedTokens);
-    
-    function _getContractBalance () virtual public view returns (uint);
+    /* FEATURES ACCESSIBLE FUNCTIONS */
 
-    function _deposit (uint depositValue_) virtual public payable;
+    function __addNewMember(Member memory newMember_) public onlyInternalFeature {
+        _addNewMember(newMember_);
+    }
 
-    function _withdraw (address payable destination_, uint value_) virtual public;
+    function __checkMainAddress (uint memberId_, address mainAddress_) public view onlyInternalFeature returns (bool) {
+        return _checkMainAddress(memberId_, mainAddress_);
+    }
+
+    function __checkSecondaryAddress (uint memberId_, address secondaryAddress_) public view onlyInternalFeature returns (bool) {
+        return _checkSecondaryAddress(memberId_, secondaryAddress_);
+    }
+
+    function __deposit (address payable from_, uint value_) virtual public payable returns (uint);
+
+    function __withdraw (address payable to_, uint value_) virtual public returns (uint);
 
 
     //** PUBLIC API */
@@ -245,15 +242,15 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     }
 
     function addSecondaryAddress (uint memberId_, address newAddress_) public onlyMainAddress (memberId_) {
-        require (_usedAddresses[newAddress_] == false, "This address is already in use");
-        _activeMembers._values[memberId_]._secondaryAddresses.push(newAddress_);
-        _usedAddresses[newAddress_] = true;
+        require (_members._usedAddresses[newAddress_] == false, "This address is already in use");
+        _members._values[memberId_]._secondaryAddresses.push(newAddress_);
+        _members._usedAddresses[newAddress_] = true;
     }
 
     function removeSecondaryAddress (uint memberId_, address addressToBeRemoved_) public onlyMainAddress (memberId_) {
         // TODO: Implement
 
-        address[] storage secondaryAddresses = _activeMembers._values[memberId_]._secondaryAddresses;
+        address[] storage secondaryAddresses = _members._values[memberId_]._secondaryAddresses;
         uint i = 0;
         bool found = false;
 
@@ -272,12 +269,12 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
             secondaryAddresses[i] = secondaryAddresses[secondaryAddresses.length - 1];
             secondaryAddresses.pop();
         }
-        _usedAddresses[addressToBeRemoved_] = false;
+        _members._usedAddresses[addressToBeRemoved_] = false;
     }
 
     function changeMainAddress (uint memberId_) public onlySecondaryAddress(memberId_) {
         
-        Member storage m = _activeMembers._values[memberId_];
+        Member storage m = _members._values[memberId_];
         bytes32[] memory allRoles = _getAllRoles();
 
         for (uint i = 0; i < allRoles.length; i++) {
@@ -299,73 +296,8 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         removeSecondaryAddress(m._id, msg.sender);
     }
 
-    function proposeMemberInclusion (uint proposerId_, Member memory newMember_) public onlyMainAddress(proposerId_) onlyRole(MEMBER_MANAGER_ROLE) {
-
-        if (_minApprovalsToAddNewMember <= 1) {
-            _addNewMember(newMember_);
-            return;
-        }
-
-        MemberProposal storage m = _memberInclusionProposals.push();
-        m._id = _memberInclusionProposalsIncremental++;
-        m._proposalType = ProposalType.INCLUSION;
-        m._affectedMember = newMember_;
-        m._approvals.push(_activeMembers._values[proposerId_]);
-    }
-
-    function proposeMemberExclusion (uint proposerId_, uint affectedMember_) public onlyMainAddress(proposerId_) onlyRole(MEMBER_MANAGER_ROLE) {
-        //TODO: Implement
-    }
-
-
-    function approveMemberInclusionProposal (uint approverId_, uint memberProposalId_) public onlyMainAddress(approverId_) onlyRole(MEMBER_MANAGER_ROLE) {
-
-        Member memory approver = _activeMembers._values[approverId_];
-        MemberProposal storage mp = _memberInclusionProposals[0];
-        bool approved = false;
-        uint i = 0;
-
-        for (i = 0; i < _memberInclusionProposals.length; i++) {
-
-            mp = _memberInclusionProposals[i];
-
-            if (mp._id == memberProposalId_) {
-
-                require (mp._proposalType == ProposalType.INCLUSION, "This proposal is not a member inclusion proposal");
-
-                for (uint j = 0; j < mp._approvals.length; j++) {
-                    require (mp._approvals[j]._id != approver._id, "A member cannot approve a member inclusion proposal twice");
-                }
-
-                _memberInclusionProposals[i]._approvals.push(approver);
-                approved = true;
-
-                break;
-            }
-        }
-
-        require (approved, "Member inclusion proposal not found");
-
-        if (mp._approvals.length >= _minApprovalsToAddNewMember) {
-            _addNewMember(mp._affectedMember);
-
-            //Deleting approved proposal from the proposals list
-            if (i == (_memberInclusionProposals.length - 1)) {
-                _memberInclusionProposals.pop();
-
-            } else {
-                MemberProposal storage approvedProposal = _memberInclusionProposals[i];
-                _memberInclusionProposals[i] = _memberInclusionProposals[_memberInclusionProposals.length - 1];
-                _memberInclusionProposals[_memberInclusionProposals.length - 1] = approvedProposal;
-                _memberInclusionProposals.pop();
-            }
-        }
-    }
-
-    function approveMemberExclusionProposal (uint approverId_, uint memberProposalId_) public onlyMainAddress(approverId_) onlyRole(MEMBER_MANAGER_ROLE) {
-        //TODO: Implement
-        // LEMBRAR DE EXCLUIR O ID DO ARRAY _ids
-        // LEMBRAR DE EXCLUIR O MEMBER DO MAPPING _values
-    }
+    function getTokenType () virtual public view returns (AllowedTokens);
+    
+    function getContractBalance () virtual public view returns (uint);
 
 }

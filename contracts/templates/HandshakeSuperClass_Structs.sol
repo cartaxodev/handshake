@@ -12,20 +12,10 @@ pragma solidity ^0.8.17;
     }
 
     struct MemberMap {
-        uint[] _ids;
+        uint[] _activeIds;
+        uint[] _inactiveIds;
         mapping (uint => Member) _values;
-    }
-
-    struct MemberProposal {
-        uint _id;
-        ProposalType _proposalType;
-        Member _affectedMember;
-        Member[] _approvals;
-    }
-
-    enum ProposalType {
-        INCLUSION,
-        EXCLUSION
+        mapping(address => bool) _usedAddresses;
     }
 
     struct Deposit {

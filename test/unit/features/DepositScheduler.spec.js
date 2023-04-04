@@ -49,9 +49,23 @@ const tests = async function () {
             
             for (contract of concreteContracts) {
                 
-                for (member of members) {
-
+                const bob = members[0];
+        
+                const bobId = await contract.getMemberId(bob._mainAddress);
+                const depositScheduler = await DepositScheduler_Logic_Factory.attach(await contract._depositScheduler());
+                
+                if (await contract.getTokenType() === 0) {
                     
+                    await expect (depositScheduler
+                        .connect(bob.signer)
+                        .payNextDeposit(bobId, {value: 1})).to.be.revertedWith('This contract is not aproved by all active members');
+
+                } else {
+
+                    await expect (depositScheduler
+                        .connect(bob.signer)
+                        .payNextDeposit(bobId)).to.be.revertedWith('This contract is not aproved by all active members');
+
                 }
             }
         });
