@@ -228,9 +228,13 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         return _checkSecondaryAddress(memberId_, secondaryAddress_);
     }
 
-    function __deposit (address payable from_, uint value_) virtual public payable returns (uint);
+    function __deposit (address payable from_, uint value_) virtual public payable onlyInternalFeature returns (uint) {
+        require (false, "Not implemented in concrete contract");
+    }
 
-    function __withdraw (address payable to_, uint value_) virtual public returns (uint);
+    function __withdraw (address payable to_, uint value_) virtual public onlyInternalFeature returns (uint) {
+        require (false, "Not implemented in concrete contract");
+    }
 
 
     //** PUBLIC API */

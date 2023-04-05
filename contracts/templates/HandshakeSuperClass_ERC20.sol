@@ -31,9 +31,9 @@ abstract contract HandshakeSuperClass_ERC20 is HandshakeSuperClass {
     function __deposit (address payable from_, uint value_) override public payable onlyInternalFeature returns (uint) {
         //require(msg.value == paymentValue_, 'The transaction value must be equal to the payment value');
         require(value_ > 0, "Deposit value must be greater than zero");
-        uint256 allowance = _token.allowance(msg.sender, address(this));
+        uint allowance = _token.allowance(from_, address(this));
         require(allowance >= value_, "This contract has not enough allowance to execute this deposit");
-        _token.transferFrom(msg.sender, address(this), value_);
+        _token.transferFrom(from_, address(this), value_);
         return _registerDeposit(from_, value_, block.timestamp);
 
     }
@@ -41,6 +41,10 @@ abstract contract HandshakeSuperClass_ERC20 is HandshakeSuperClass {
     function __withdraw(address payable to_, uint value_) override public onlyInternalFeature returns (uint) {
         _token.transfer(to_, value_);
         return _registerWithdrawal(to_, value_, block.timestamp);
+    }
+
+    function getTokenAddress() public view returns (address) {
+        return _tokenAddress;
     }
 
 

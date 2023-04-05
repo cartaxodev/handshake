@@ -76,8 +76,8 @@ const contractApprovedFixture = async function () {
 
     for (contract of concreteContracts) {
         for (member of members) {
-            const memberIndex = await contract.getMemberIndex(member._mainAddress);
-            await contract.connect(member.signer).approveTheContract(memberIndex);
+            const memberId = await contract.getMemberId(member._mainAddress);
+            await contract.connect(member.signer).approveTheContract(memberId);
         }
     }
 
