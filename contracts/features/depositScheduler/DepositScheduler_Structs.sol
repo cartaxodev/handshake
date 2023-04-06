@@ -22,4 +22,5 @@ struct DepositExecutionInfo {
     uint _lateDepositFee;
     uint _finalValue;
     uint _depositId;
+    uint _executionTimestamp;
 }

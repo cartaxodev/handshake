@@ -17,7 +17,8 @@ exports.getDepositSchedule = async function() {
                 _principalValue: 1,
                 _lateDepositFee: 0,
                 _finalValue: 1, 
-                _depositId: 0
+                _depositId: 0,
+                _executionTimestamp: 0
             }
         });
 
@@ -31,7 +32,8 @@ exports.getDepositSchedule = async function() {
                 _principalValue: 1,
                 _lateDepositFee: 0,
                 _finalValue: 1, 
-                _depositId: 0
+                _depositId: 0,
+                _executionTimestamp: 0
             }
         });
     }

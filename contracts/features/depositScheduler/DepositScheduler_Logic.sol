@@ -45,7 +45,8 @@ contract DepositScheduler_Logic is FeatureLogic {
             _principalValue: newScheduling._value,
             _lateDepositFee: 0,
             _finalValue: newScheduling._value,
-            _depositId: 0
+            _depositId: 0,
+            _executionTimestamp: 0
          });
 
          DepositScheduling[] storage memberSchedule = _depositSchedule[newScheduling._memberId];
@@ -98,6 +99,7 @@ contract DepositScheduler_Logic is FeatureLogic {
       uint depositId = _concreteContract.__deposit{value: msg.value}(payable(msg.sender), nextDeposit._executionInfo._finalValue);
       nextDeposit._executionInfo._executed = true;
       nextDeposit._executionInfo._depositId = depositId;
+      nextDeposit._executionInfo._executionTimestamp = block.timestamp;
    }
 
 }
