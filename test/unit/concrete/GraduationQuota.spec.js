@@ -2,6 +2,7 @@ const { loadFixture, time } = require('@nomicfoundation/hardhat-network-helpers'
 const membersMock = require('../mocks/general/MembersMock.js');
 const depositScheduleMock = require('../mocks/general/DepositScheduleMock.js');
 const HandshakeSuperClassSpec = require("../templates/HandshakeSuperClass/HandshakeSuperClass.spec.js");
+const MemberListControllerSpec = require("./../features/MemberListController.spec.js");
 const DepositSchedulerSpec = require("./../features/DepositScheduler.spec.js");
 const WithdrawalControllerSpec = require("./../features/WithdrawalController.spec.js");
 
@@ -69,11 +70,11 @@ const deployContractNotApprovedFixture = async function () {
 
     const concreteContracts = [graduationQuotaETH, graduationQuotaERC20];
 
-    return { concreteContracts, erc20Token, members, notMember, memberManagers };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers };
 }
 
 const contractApprovedFixture = async function () {
-    const { concreteContracts, erc20Token, members, notMember, memberManagers } = await loadFixture(deployContractNotApprovedFixture);
+    const { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers } = await loadFixture(deployContractNotApprovedFixture);
 
     for (contract of concreteContracts) {
         for (member of members) {
@@ -82,11 +83,11 @@ const contractApprovedFixture = async function () {
         }
     }
 
-    return { concreteContracts, erc20Token, members, notMember, memberManagers };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers };
 }
 
 const contractWithAllDepositsDoneFixture = async function () {
-    const { concreteContracts, erc20Token, members, notMember, memberManagers } = await loadFixture(contractApprovedFixture);
+    const { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers } = await loadFixture(contractApprovedFixture);
     
     const DepositScheduler_Logic_Factory = await ethers.getContractFactory('DepositScheduler_Logic');
 
@@ -99,7 +100,7 @@ const contractWithAllDepositsDoneFixture = async function () {
             for (member of members) {
                 const memberId = await contract.getMemberId(member._mainAddress);
 
-                for (deposit of member._deposits) {
+                for (deposit of await depositScheduler.getMemberSchedule(memberId)) {
 
                     await depositScheduler
                         .connect(member.signer)
@@ -111,7 +112,7 @@ const contractWithAllDepositsDoneFixture = async function () {
             for (member of members) {
                 const memberId = await contract.getMemberId(member._mainAddress);
 
-                for (deposit of member._deposits) {
+                for (deposit of await depositScheduler.getMemberSchedule(memberId)) {
 
                     await erc20Token
                         .connect(member.signer)
@@ -125,11 +126,11 @@ const contractWithAllDepositsDoneFixture = async function () {
         }
     }
     
-    return { concreteContracts, erc20Token, members, notMember, memberManagers };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers };
 }
 
 const proposedWithdrawalsFixture = async function () {
-    const { concreteContracts, erc20Token, members, notMember, memberManagers }= await loadFixture(contractWithAllDepositsDoneFixture);
+    const { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers }= await loadFixture(contractWithAllDepositsDoneFixture);
 
     const WithdrawalController_Logic_Factory = await ethers.getContractFactory('WithdrawalController_Logic');
 
@@ -142,22 +143,22 @@ const proposedWithdrawalsFixture = async function () {
 
         await withdrawalController
             .connect(bob.signer)
-            .proposeWithdrawal(bobId, 5, "fixture withdraw 1", bob._mainAddress);
+            .proposeWithdrawal(bobId, 5, "fixture withdraw 1 - have to me at least 20 characters", bob._mainAddress);
 
         await withdrawalController
             .connect(bob.signer)
-            .proposeWithdrawal(bobId, 5, "fixture withdraw 2", bob._mainAddress);
+            .proposeWithdrawal(bobId, 5, "fixture withdraw 2 - have to me at least 20 characters", bob._mainAddress);
 
         await withdrawalController
             .connect(bob.signer)
-            .proposeWithdrawal(bobId, 5, "fixture withdraw 3", bob._mainAddress);
+            .proposeWithdrawal(bobId, 5, "fixture withdraw 3 - have to me at least 20 characters", bob._mainAddress);
     }
 
-    return { concreteContracts, erc20Token, members, notMember, memberManagers };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers };
 }
 
 const authorizedWithdrawalsFixture =  async function () {
-    const { concreteContracts, erc20Token, members, notMember, memberManagers } = await loadFixture(proposedWithdrawalsFixture);
+    const { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers } = await loadFixture(proposedWithdrawalsFixture);
 
     const WithdrawalController_Logic_Factory = await ethers.getContractFactory('WithdrawalController_Logic');
 
@@ -181,7 +182,7 @@ const authorizedWithdrawalsFixture =  async function () {
             .authorizeWithdrawal(aliceId, 2);
     }
 
-    return { concreteContracts, erc20Token, members, notMember, memberManagers };
+    return { concreteContracts, erc20Token, members, notMember, memberManagers, withdrawalApprovers };
 }
 
 
@@ -189,13 +190,20 @@ const authorizedWithdrawalsFixture =  async function () {
 HandshakeSuperClassSpec.setFixtures(deployContractNotApprovedFixture, 
                                     contractApprovedFixture);
 
+MemberListControllerSpec.setFixtures(deployContractNotApprovedFixture, 
+                                    contractApprovedFixture);
+
 DepositSchedulerSpec.setFixtures(deployContractNotApprovedFixture, 
                                     contractApprovedFixture);
                                     
 WithdrawalControllerSpec.setFixtures(deployContractNotApprovedFixture,
-                                    contractApprovedFixture);
+                                    contractApprovedFixture,
+                                    contractWithAllDepositsDoneFixture,
+                                    proposedWithdrawalsFixture,
+                                    authorizedWithdrawalsFixture);
 
 /* DESCRIBES TEST SCHEDULE */
-describe("GraduationQuota_ETH - HandshakeSuperClass TESTS", HandshakeSuperClassSpec.tests);
-describe("GraduationQuota_ETH - DepositScheduler TESTS", DepositSchedulerSpec.tests);
-describe("GraduationQuota_ETH - WithdrawalController TESTS", WithdrawalControllerSpec.tests);
+describe("GraduationQuota - HandshakeSuperClass TESTS", HandshakeSuperClassSpec.tests);
+describe("GraduationQuota - MemberListController TESTS", MemberListControllerSpec.tests);
+describe("GraduationQuota - DepositScheduler TESTS", DepositSchedulerSpec.tests);
+describe("GraduationQuota - WithdrawalController TESTS", WithdrawalControllerSpec.tests);

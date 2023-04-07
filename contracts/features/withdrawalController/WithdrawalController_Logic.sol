@@ -23,7 +23,6 @@ contract WithdrawalController_Logic is FeatureLogic {
                                     ) external initializer {
       
         _initializeLogic(concreteContractAddress_);
-        require (minApprovalsToWithdraw_ <= membersList_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the number of active members");
         require (minApprovalsToWithdraw_ <= withdrawalApprovers_.length, "The minimum number of members approvals necessary to withdraw cannot be greater than the total of approvers of this contract");
         require (maxWithdrawValue_ > 0, "The maximum value of a withdrawal must be greater than zero");
 
@@ -81,7 +80,7 @@ contract WithdrawalController_Logic is FeatureLogic {
 
     //** PUBLIC API **//
 
-    function proposeWithdrawal (uint8 proposerId_, uint value_, string memory objective_, address payable to_) public onlyApproved onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(proposerId_) {
+    function proposeWithdrawal (uint8 proposerId_, uint value_, string memory objective_, address payable to_) public onlyApproved onlyMainAddress(proposerId_) onlyRole(WITHDRAWAL_APPROVER_ROLE) {
 
         require(value_ <= _concreteContract.getContractBalance(), 
             'Withdrawal value must be equal or less than the contract balance');
@@ -109,7 +108,7 @@ contract WithdrawalController_Logic is FeatureLogic {
     }
 
 
-    function authorizeWithdrawal (uint8 authorizerId_, uint withdrawalId_) public onlyApproved onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(authorizerId_) {
+    function authorizeWithdrawal (uint8 authorizerId_, uint withdrawalId_) public onlyApproved onlyMainAddress(authorizerId_) onlyRole(WITHDRAWAL_APPROVER_ROLE) {
 
         for (uint i = 0; i < _proposedWithdrawals.length; i++) {
             if (_proposedWithdrawals[i]._id == withdrawalId_) {
@@ -132,7 +131,7 @@ contract WithdrawalController_Logic is FeatureLogic {
     }
 
 
-    function executeWithdrawal (uint8 memberId_, uint withdrawalProposalId_) public onlyApproved onlyRole(WITHDRAWAL_APPROVER_ROLE) onlyMainAddress(memberId_) {
+    function executeWithdrawal (uint8 memberId_, uint withdrawalProposalId_) public onlyApproved onlyMainAddress(memberId_) onlyRole(WITHDRAWAL_APPROVER_ROLE){
 
         uint i;
         bool executed = false;

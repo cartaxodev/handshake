@@ -45,6 +45,22 @@ const tests = async function () {
             // }
         });
 
+        it("Should all manager have the MEMBER_MANAGER_ROLE and any other address shouldn't", async function() {
+            
+            const { members, notMember, concreteContracts, memberManagers } = await loadFixture(_deployContractNotApprovedFixture);
+            
+            for (contract of concreteContracts) {
+
+                for (manager of memberManagers) {
+                    expect (await contract.hasRole(await contract.MEMBER_MANAGER_ROLE(), manager)).to.equal(true);
+                }
+
+                expect (await contract.hasRole(await contract.MEMBER_MANAGER_ROLE(), members[4]._mainAddress)).to.equal(false);
+                expect (await contract.hasRole(await contract.MEMBER_MANAGER_ROLE(), notMember._mainAddress)).to.equal(false);
+                
+            }
+        });
+
         it("Should a member manager propose a member inclusion", async function() {
             const { members, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
 
