@@ -9,8 +9,7 @@ abstract contract HandshakeSuperClass_ETH is HandshakeSuperClass {
     AllowedTokens internal constant _tokenType = AllowedTokens.ETH;
 
     constructor(string memory objective_,
-                 Member[] memory membersList_, 
-                 address[] memory memberManagers_) HandshakeSuperClass (objective_, membersList_, memberManagers_) {
+                 Member[] memory membersList_) HandshakeSuperClass (objective_, membersList_) {
     }
 
     function getTokenType () override public pure returns (AllowedTokens) {

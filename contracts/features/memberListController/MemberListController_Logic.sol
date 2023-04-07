@@ -20,6 +20,8 @@ contract MemberListController_Logic is FeatureLogic {
     /* CONTRACT INITIALIZATION FUNCTON 
         IT MUST BE CALLED BY THE PROXY CONTRACT CONSTRUCTOR */
     function initializeFeature (address concreteContractAddress_,
+                                Member[] memory membersList_,
+                                address[] memory memberManagers_,
                                 uint minApprovalsToAddNewMember_,
                                 uint minApprovalsToRemoveMember_
                                     ) external initializer {
@@ -31,6 +33,22 @@ contract MemberListController_Logic is FeatureLogic {
                 
         _minApprovalsToAddNewMember = minApprovalsToAddNewMember_;
         _minApprovalsToRemoveMember = minApprovalsToRemoveMember_;
+
+        _checkManagersAsMembers(memberManagers_, membersList_);
+    }
+
+    /* INTERNAL FUNCTIONS */
+
+    function _checkManagersAsMembers(address[] memory managers_, Member[] memory membersList_) private pure {
+        for (uint i = 0; i < managers_.length; i++) {
+            bool managerIsMember = false;
+            for (uint j = 0; j < membersList_.length; j++) {
+                if (managers_[i] == membersList_[j]._mainAddress) {
+                    managerIsMember = true;
+                }
+            }
+            require (managerIsMember, "One (or more) manager is not an active member");
+        }
     }
 
     function proposeMemberInclusion (uint proposerId_, Member memory newMember_) public onlyMainAddress(proposerId_) onlyRole(MEMBER_MANAGER_ROLE) {
@@ -100,6 +118,7 @@ contract MemberListController_Logic is FeatureLogic {
         //TODO: Implement
         // LEMBRAR DE EXCLUIR O ID DO ARRAY _ids
         // LEMBRAR DE EXCLUIR O MEMBER DO MAPPING _values
+        // LEMBRAR DE EXCLUIR TODAS AS ROLES
     }
 
 }

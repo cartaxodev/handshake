@@ -31,17 +31,12 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
     address[] public _featureProxies;
 
     constructor(string memory objective_,
-                 Member[] memory membersList_, 
-                 address[] memory memberManagers_) {
+                 Member[] memory membersList_) {
 
         _objective = objective_;
 
         for (uint i = 0; i < membersList_.length; i++) {
             _addNewMember(membersList_[i]);
-        }
-
-        for (uint i = 0; i < memberManagers_.length; i++) {
-            _grantRole(MEMBER_MANAGER_ROLE, memberManagers_[i]);
         }
     }
 
@@ -65,7 +60,7 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
         _;
     }
 
-    modifier contractApprovedForAll {
+    modifier onlyApproved {
         require(_contractApproved, "This contract is not aproved by all active members");
         _;
     }
@@ -226,6 +221,10 @@ abstract contract HandshakeSuperClass is  AccessControlEnumerable, AccessControl
 
     function __checkSecondaryAddress (uint memberId_, address secondaryAddress_) public view onlyInternalFeature returns (bool) {
         return _checkSecondaryAddress(memberId_, secondaryAddress_);
+    }
+
+    function __grantRole (bytes32 role_, address memberAddress_) public onlyInternalFeature {
+        _grantRole(role_, memberAddress_);
     }
 
     function __deposit (address payable from_, uint value_) virtual public payable onlyInternalFeature returns (uint) {

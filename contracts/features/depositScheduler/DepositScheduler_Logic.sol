@@ -88,7 +88,7 @@ contract DepositScheduler_Logic is FeatureLogic {
       return _getNextPendingDeposit(memberId_);
    }
 
-   function payNextDeposit (uint8 memberId_) public payable contractApprovedForAll onlyMainAddress(memberId_) {
+   function payNextDeposit (uint8 memberId_) public payable onlyApproved onlyMainAddress(memberId_) {
       DepositScheduling storage nextDeposit = _getNextPendingDeposit(memberId_);
       
       if (_deadlineControlConfig._isControlActive) {

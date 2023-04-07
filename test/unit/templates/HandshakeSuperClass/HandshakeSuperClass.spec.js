@@ -33,8 +33,7 @@ const tests = async function () {
 
             const PureHandshakeFactory = await ethers.getContractFactory('PureHandshake');
             await expect (PureHandshakeFactory.deploy("To get funds to graduation party",
-                                                                members,
-                                                                memberManagers)).to.be.revertedWith("This address is already in use");
+                                                                members)).to.be.revertedWith("This address is already in use");
             bob._secondaryAddresses.pop();
         });
 
@@ -50,8 +49,7 @@ const tests = async function () {
 
             const PureHandshakeFactory = await ethers.getContractFactory('PureHandshake');
             await expect (PureHandshakeFactory.deploy("To get funds to graduation party",
-                                                                members,
-                                                                memberManagers)).to.be.revertedWith("This address is already in use");
+                                                                members)).to.be.revertedWith("This address is already in use");
 
             bob._mainAddress = bobMainAddress;
         });
@@ -82,27 +80,6 @@ const tests = async function () {
                 for (let i = 0; i < deployedMembers.length; i++) {
                     expect(deployedMembers[i]._id).to.equal(i);
                 }
-            }
-        });
-
-        it("Should contract have 3 member managers", async function() {
-            
-            const { members, concreteContracts } = await loadFixture(_deployContractNotApprovedFixture);
-            
-            for (contract of concreteContracts) {
-
-                const MEMBER_MANAGER_ROLE = await contract.MEMBER_MANAGER_ROLE();
-                
-                const deployedMembers = await contract.getActiveMembers();
-                let managersCount = 0;
-
-                for (member of deployedMembers) {
-                    if (await contract.hasRole(MEMBER_MANAGER_ROLE, member._mainAddress) === true) {
-                        managersCount++;
-                    }
-                }
-
-                expect(managersCount).to.equal(3);
             }
         });
 

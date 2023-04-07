@@ -33,22 +33,27 @@ contract GraduationQuota_ERC20 is HandshakeSuperClass_ERC20 {
                 address[] memory withdrawalApprovers_,
                 uint minApprovalsToWithdraw_,
                 uint maxWithdrawValue_
-                ) HandshakeSuperClass_ERC20 (objective_, membersList_, memberManagers_, tokenAddress_)
+                ) HandshakeSuperClass_ERC20 (objective_, membersList_, tokenAddress_)
                 {
                     bytes memory delegateCallData_;
                     
                     /* CREATING AND INITIALIZING MEMBER LIST CONTROLLER */
                     delegateCallData_ = abi.encodeWithSelector(
                                                             MemberListController_Logic.initializeFeature.selector, 
-                                                            address(this), 
+                                                            address(this),
+                                                            membersList_,
+                                                            memberManagers_,
                                                             minApprovalsToAddNewMember_,
                                                             minApprovalsToRemoveMember_);
 
                     MemberListController_Logic memberListControllerlogic_ = new MemberListController_Logic();
                     _memberListController = new MemberListController_Proxy(memberListControllerlogic_, delegateCallData_);
                     _grantFeatureRole(address(_memberListController));
+                    for (uint i = 0; i < memberManagers_.length; i++) {
+                        _grantRole(MEMBER_MANAGER_ROLE, memberManagers_[i]);
+                    }
 
-
+                    
                     /* CREATING AND INITIALIZING DEPOSIT SCHEDULER */
                     delegateCallData_ = abi.encodeWithSelector(
                                                             DepositScheduler_Logic.initializeFeature.selector, 
@@ -73,5 +78,8 @@ contract GraduationQuota_ERC20 is HandshakeSuperClass_ERC20 {
                     WithdrawalController_Logic withdrawalControllerlogic_ = new WithdrawalController_Logic();
                     _withdrawalController = new WithdrawalController_Proxy(withdrawalControllerlogic_, delegateCallData_);
                     _grantFeatureRole(address(_withdrawalController));
+                    for (uint i = 0; i < withdrawalApprovers_.length; i++) {
+                        _grantRole(WITHDRAWAL_APPROVER_ROLE, withdrawalApprovers_[i]);
+                    }
                 }
 }

@@ -12,9 +12,8 @@ abstract contract HandshakeSuperClass_ERC20 is HandshakeSuperClass {
     IERC20 internal _token;
 
     constructor(string memory objective_,
-                 Member[] memory membersList_, 
-                 address[] memory memberManagers_,
-                 address tokenAddress_) HandshakeSuperClass (objective_, membersList_, memberManagers_) {
+                 Member[] memory membersList_,
+                 address tokenAddress_) HandshakeSuperClass (objective_, membersList_) {
                     
         _tokenAddress = tokenAddress_;
         _token = IERC20(tokenAddress_);

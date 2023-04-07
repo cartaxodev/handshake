@@ -7,9 +7,8 @@ import "./../templates/HandshakeSuperClass.sol";
 contract PureHandshake is HandshakeSuperClass {
 
     constructor (string memory objective_,
-                 Member[] memory membersList_, 
-                 address[] memory memberManagers_)
-                     HandshakeSuperClass (objective_, membersList_, memberManagers_) {}
+                 Member[] memory membersList_)
+                     HandshakeSuperClass (objective_, membersList_) {}
 
     function getTokenType()
         public

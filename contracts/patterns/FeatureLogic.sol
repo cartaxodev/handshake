@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "./../util/AccessControlUtils.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./../templates/HandshakeSuperClass.sol";
 
 pragma solidity ^0.8.17;
 
-abstract contract FeatureLogic is Initializable, AccessControlEnumerable, AccessControlUtils {
+abstract contract FeatureLogic is Initializable, AccessControlUtils {
 
     HandshakeSuperClass internal _concreteContract;
 
@@ -27,8 +26,18 @@ abstract contract FeatureLogic is Initializable, AccessControlEnumerable, Access
         _;
     }
 
-    modifier contractApprovedForAll {
+    modifier onlyApproved {
         require(_concreteContract.isContractApproved(), "This contract is not aproved by all active members");
+        _;
+    }
+
+    modifier onlyRole(bytes32 role_) {
+        require (_concreteContract.hasRole(role_, msg.sender), "This address has not a needed role");
+        _;
+    }
+
+    modifier onlyConcrete {
+        require (msg.sender == address(_concreteContract), "Only the concrete contract can call this function");
         _;
     }
 
