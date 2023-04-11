@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import "./../templates/HandshakeSuperClass.sol";
+import "./../templates/HandshakeSuperClass.sol";  
 
 contract PureHandshake is HandshakeSuperClass {
 
