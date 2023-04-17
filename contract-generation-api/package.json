@@ -1,7 +1,7 @@
 {
-  "name": "handshake",
+  "name": "contract-generation-api",
   "version": "1.0.0",
-  "description": "Smart-Contract generation platform with NLP",
+  "description": "Endpoint for smart-contract generation and deploy",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,13 +17,6 @@
   },
   "homepage": "https://github.com/cartaxodev/handshake#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.8.3",
-    "dotenv": "^16.0.3",
-    "hardhat": "^2.12.7"
-  },
-  "devDependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
-    "chai-bn": "^0.3.1"
+    "express": "^4.18.2"
   }
 }
