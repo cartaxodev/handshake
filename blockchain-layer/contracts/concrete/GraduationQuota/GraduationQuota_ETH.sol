@@ -4,16 +4,16 @@ pragma solidity ^0.8.17;
 
 //import "hardhat/console.sol";
 
-import "./../templates/HandshakeSuperClass_ETH.sol";
-import "./../features/memberListController/MemberListController_Proxy.sol";
-import "./../features/memberListController/MemberListController_Logic.sol";
-import "./../features/memberListController/MemberListController_Structs.sol";
-import "./../features/depositScheduler/DepositScheduler_Proxy.sol";
-import "./../features/depositScheduler/DepositScheduler_Logic.sol";
-import "./../features/depositScheduler/DepositScheduler_Structs.sol";
-import "./../features/withdrawalController/WithdrawalController_Proxy.sol";
-import "./../features/withdrawalController/WithdrawalController_Logic.sol";
-import "./../features/withdrawalController/WithdrawalController_Structs.sol";
+import "./../../templates/HandshakeSuperClass_ETH.sol";
+import "./../../features/memberListController/MemberListController_Proxy.sol";
+import "./../../features/memberListController/MemberListController_Logic.sol";
+import "./../../features/memberListController/MemberListController_Structs.sol";
+import "./../../features/depositScheduler/DepositScheduler_Proxy.sol";
+import "./../../features/depositScheduler/DepositScheduler_Logic.sol";
+import "./../../features/depositScheduler/DepositScheduler_Structs.sol";
+import "./../../features/withdrawalController/WithdrawalController_Proxy.sol";
+import "./../../features/withdrawalController/WithdrawalController_Logic.sol";
+import "./../../features/withdrawalController/WithdrawalController_Structs.sol";
 
 contract GraduationQuota_ETH is HandshakeSuperClass_ETH {
 
