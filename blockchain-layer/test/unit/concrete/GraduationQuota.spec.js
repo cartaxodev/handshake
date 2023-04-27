@@ -9,6 +9,9 @@ const WithdrawalControllerSpec = require("./../features/WithdrawalController.spe
 
 /* FIXTURES DEFINITION */
 
+const contractTypeSource = "contracts/concrete/GraduationQuota/";
+const contractVersion = "v1.0.0";
+
 const deployContractNotApprovedFixture = async function () {
 
     const minApprovalsToAddNewMember = 2;
@@ -39,7 +42,7 @@ const deployContractNotApprovedFixture = async function () {
     await erc20Token.connect(erc20TokenOwner).mint(members[3]._mainAddress, 100);
     await erc20Token.connect(erc20TokenOwner).mint(members[4]._mainAddress, 100);
 
-    const GraduationQuotaETH = await ethers.getContractFactory('GraduationQuota_ETH');
+    const GraduationQuotaETH = await ethers.getContractFactory(contractTypeSource + 'GraduationQuota_ETH.sol:GraduationQuota_ETH');
     const graduationQuotaETH = await GraduationQuotaETH.deploy("To get funds to graduation party",
                                                                 members,
                                                                 memberManagers,
@@ -53,7 +56,7 @@ const deployContractNotApprovedFixture = async function () {
                                                                );
     await graduationQuotaETH.deployed();
 
-    const GraduationQuotaERC20 = await ethers.getContractFactory('GraduationQuota_ERC20');
+    const GraduationQuotaERC20 = await ethers.getContractFactory(contractTypeSource + 'GraduationQuota_ERC20.sol:GraduationQuota_ERC20');
     const graduationQuotaERC20 = await GraduationQuotaERC20.deploy("To get funds to graduation party",
                                                                     members,
                                                                     memberManagers,
