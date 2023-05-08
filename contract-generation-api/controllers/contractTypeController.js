@@ -19,11 +19,11 @@ const contractTypes =
 /* Returns all available contract types */
 exports.getAllContractTypes = ((req, res) => {
 
-    const response = [];
+    const types = [];
 
     for (contractType of contractTypes) {
 
-        response.push({
+        types.push({
             id: contractType.id,
             name: contractType.name,
             description: contractType.description
@@ -31,7 +31,23 @@ exports.getAllContractTypes = ((req, res) => {
     }
 
     res.status(200).json({
-        contractTypes: response
+        contractTypes: types,
+        baseParams: [
+            {
+                fieldName: "network",
+                options: [
+                    { id: 1, networkName: "Ethereum" },
+                    { id: 2, networkName: "Polygon" }
+                ]
+            },
+            {
+                fieldName: "currency",
+                options: [
+                    { id: 1, currencyName: "Ether (ETH)" },
+                    { id: 2, currencyName: "USDT" }
+                ]
+            }
+        ]
     });
 });
 
@@ -44,23 +60,7 @@ exports.getContractType = ((req, res) => {
     const response = {
         id: contractType.id,
         name: contractType.name,
-        description: contractType.description,
-        nativeFields: [
-            {
-                fieldName: "Networks",
-                options: [
-                    { id: 1, networkName: "Ethereum" },
-                    { id: 2, networkName: "Polygon" }
-                ]
-            },
-            {
-                fieldName: "Currencies",
-                options: [
-                    { id: 1, currencyName: "Ether (ETH)" },
-                    { id: 2, currencyName: "USDT" }
-                ]
-            }
-        ]
+        description: contractType.description
     }
 
     res.status(200).json({
