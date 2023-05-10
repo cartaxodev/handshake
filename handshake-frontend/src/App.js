@@ -1,77 +1,89 @@
-import getContractTypes from './api';
+import api from './api';
 import { useState } from 'react';
-import ContractTypesSelect from './ContractTypesSelect';
-import NetworkSelect from './NetworkSelect';
-import CurrencySelect from './CurrencySelect';
+import BaseParamsPanel from './components/BaseParamsPanel';
+import ContractDefinitionPanel from './components/ContractDefinitionPanel';
 
 function App() {
 
-    const [baseParams, setBaseParams] = useState(undefined)
-    const [contractTypes, setContractTypes] = useState(undefined)
+    //State for contractTypes fetched from the API
+    const [contractTypes, setContractTypes] = useState(undefined);
 
-    const handleClick = async () => {
-        const getContractTypesResponse = await getContractTypes();
-        setBaseParams(getContractTypesResponse.data.baseParams);
-        setContractTypes(getContractTypesResponse.data.contractTypes);
+    //States for basic params
+    const [currency, setCurrency] = useState(undefined);
+    const [network, setNetwork] = useState(undefined);
+    const [contractType, setContractType] = useState(undefined);
+
+    //States for contractTemplate fecthed from the API
+    const [contractTemplate, setContractTemplate] = useState(undefined);
+
+    //Array of states for each contract template field.
+    //This array is used to provide state to each component of contract definition
+    const [contractDefinitionState, setContractDefinitionState] = useState([]);
+
+    const handleNewContractButtonClick = async () => {
+        const apiResponse = await api.getContractTypes();
+        setContractTypes(apiResponse);
+    }
+
+    const handleDefineClausesButtonClick = async () => {
+        const apiResponse = await api.getContractTemplate(network,
+                                                        currency,
+                                                        contractType);
+        setContractTemplate(apiResponse);
+        buildContractDefinitionStates(apiResponse);
+    }
+
+    const buildContractDefinitionStates = async (apiResponse) => {
+
+        const contractStates = [];
+
+        let param;
+        for (param of apiResponse.nativeParams) {
+            contractStates.push({
+                name: param.name,
+                stateValue: ""
+            });
+        }
+
+        setContractDefinitionState(contractStates);
     }
 
     return (
-    <div>
         <div>
-            <button onClick={handleClick}>
-                Elaborar Novo Contrato
-            </button>
+            <div>
+                <button onClick={handleNewContractButtonClick}>
+                    Elaborar Novo Contrato
+                </button>
+            </div>
+            <div>
+                <BaseParamsPanel contractTypes={contractTypes}
+                                setContractType={setContractType}
+                                setNetwork={setNetwork}
+                                setCurrency={setCurrency}
+                                handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
+            </div>
+            <div>
+                <p>Current Contract Attributes:</p>
+                <p />       
+                <p>network: {network}</p>
+                <p>currency: {currency}</p>
+                <p>contractType: {contractType}</p>
+            </div>
+            <div>
+                <p>Contract Template:</p>
+                {JSON.stringify(contractTemplate)}
+            </div>
+            <div>
+                <ContractDefinitionPanel contractDefinitionState={contractDefinitionState}
+                                            setContractDefinitionState={setContractDefinitionState}/>
+            </div>
+            <div>
+                <p>
+                    {JSON.stringify(contractDefinitionState)}
+                </p>
+            </div>
         </div>
-        {renderBaseParamsComponents(baseParams)}
-        {renderContractTypesSelect(contractTypes)}
-    </div>
     );
-}
-
-function renderBaseParamsComponents(baseParams_) {
-    
-    if (baseParams_ === undefined) {
-        return <div></div>
-
-    } else {
-
-
-        const renderedComponents = baseParams_.map((param) => {
-
-            if (param.fieldName === "network") {
-                return <NetworkSelect networks={param.options}/>
-            }
-            if (param.fieldName === "currency") {
-                return <CurrencySelect currencies={param.options} />
-            }
-
-        });
-
-        return (
-            <div>
-                {renderedComponents}
-            </div>
-        );
-
-
-        // return (
-        //     <div>
-        //         <ContractTypesSelect contractTypes={contractTypes_}/>
-        //     </div>
-        // );
-    }
-}
-
-function renderContractTypesSelect(contractTypes_) {
-    if (contractTypes_ === undefined) {
-        return <div></div>
-    } else {
-        return (
-            <div>
-                <ContractTypesSelect contractTypes={contractTypes_}/>
-            </div>
-        );
-    }
 }
 
 export default App;

@@ -31,23 +31,7 @@ exports.getAllContractTypes = ((req, res) => {
     }
 
     res.status(200).json({
-        contractTypes: types,
-        baseParams: [
-            {
-                fieldName: "network",
-                options: [
-                    { id: 1, networkName: "Ethereum" },
-                    { id: 2, networkName: "Polygon" }
-                ]
-            },
-            {
-                fieldName: "currency",
-                options: [
-                    { id: 1, currencyName: "Ether (ETH)" },
-                    { id: 2, currencyName: "USDT" }
-                ]
-            }
-        ]
+        contractTypes: types
     });
 });
 

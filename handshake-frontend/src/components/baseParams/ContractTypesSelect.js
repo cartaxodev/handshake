@@ -1,9 +1,9 @@
 import { useState } from "react";
 
 
-function ContractTypesSelect({ contractTypes }) {
+function ContractTypesSelect({ contractTypes, setContractType }) {
 
-    const [contractDescription, setcontractDescription] = useState(contractTypes[0].description)
+    const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
 
     function handleChange(event) {
         const contractId = Number(event.target.value);
@@ -11,10 +11,12 @@ function ContractTypesSelect({ contractTypes }) {
 
         for (contractType of contractTypes) {
             if (contractId === contractType.id) {
-                setcontractDescription(contractType.description);
+                setContractDescription(contractType.description);
                 break;
             }
         }
+
+        setContractType(contractId);
     }
 
     const renderedOptions = contractTypes.map((contractType) => {
