@@ -9,9 +9,9 @@ function App() {
     const [contractTypes, setContractTypes] = useState(undefined);
 
     //States for basic params
-    const [currency, setCurrency] = useState(undefined);
-    const [network, setNetwork] = useState(undefined);
-    const [contractType, setContractType] = useState(undefined);
+    const [currency, setCurrency] = useState(1);
+    const [network, setNetwork] = useState(1);
+    const [contractType, setContractType] = useState(1);
 
     //States for contractTemplate fecthed from the API
     const [contractTemplate, setContractTemplate] = useState(undefined);
@@ -45,6 +45,13 @@ function App() {
             });
         }
 
+        for (param of apiResponse.featuresParams) {
+            contractStates.push({
+                name: param.name,
+                stateValue: ""
+            });
+        }
+
         setContractDefinitionState(contractStates);
     }
 
@@ -57,22 +64,17 @@ function App() {
             </div>
             <div>
                 <BaseParamsPanel contractTypes={contractTypes}
+                                network={network}
+                                currency={currency}
                                 setContractType={setContractType}
                                 setNetwork={setNetwork}
                                 setCurrency={setCurrency}
                                 handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
             </div>
-            <div>
-                <p>Current Contract Attributes:</p>
-                <p />       
-                <p>network: {network}</p>
-                <p>currency: {currency}</p>
-                <p>contractType: {contractType}</p>
-            </div>
-            <div>
+            {/* <div>
                 <p>Contract Template:</p>
                 {JSON.stringify(contractTemplate)}
-            </div>
+            </div> */}
             <div>
                 <ContractDefinitionPanel contractDefinitionState={contractDefinitionState}
                                             setContractDefinitionState={setContractDefinitionState}/>

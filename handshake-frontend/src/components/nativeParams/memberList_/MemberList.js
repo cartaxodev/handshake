@@ -1,25 +1,28 @@
+import { useState } from "react";
 import MemberForm from "./MemberForm";
 
 
 
 function MemberList ({ state, setState }) {
 
-    const setMemberState = (memberIndex, newMemberState) => {
+    const [nextId, setNextId] = useState(0);
+
+    const setMemberState = (memberId, newMemberState) => {
         
         const members = [];
-        for (let i = 0; i < state.length; i++) {
-            if (i === memberIndex) {
+        for (let member of state) {
+            if (member._id === memberId) {
                 members.push(newMemberState);
             }
             else {
-                members.push(state[i]);
+                members.push(member);
             }
         }
 
         setState("memberList_", members);
     }
 
-    const handleClick = (event) => {
+    const handleAddMemberClick = (e) => {
         const members = []
         if (state !== "") {
             let el;
@@ -28,12 +31,25 @@ function MemberList ({ state, setState }) {
             }
         }
         const newMember = {
-            _id: 0,
+            _id: getNextId(),
             _login: "",
             _mainAddress: "",
             _secondaryAddresses: []
         }
         members.push(newMember);
+        setState("memberList_", members);
+    }
+
+    const getNextId = () => {
+        setNextId(nextId + 1);
+        return nextId;
+    }
+
+    const removeMember = (memberId) => {
+        const members = state.filter((member) => {
+            return (member._id !== memberId);
+        });
+
         setState("memberList_", members);
     }
 
@@ -43,7 +59,10 @@ function MemberList ({ state, setState }) {
         memberInputs = state.map((member, index) => {
             return (
             <div key={index}>
-                <MemberForm memberIndex={index} state={member} setState={setMemberState} />
+                <MemberForm 
+                            state={member} 
+                            setState={setMemberState}
+                            removeMember={removeMember} />
             </div>
             );
         });
@@ -53,7 +72,7 @@ function MemberList ({ state, setState }) {
             Informe abaixo os dados de cada membro participante do contrato:
             {memberInputs}
         <p>
-            <button onClick={handleClick}>Add Novo Membro</button>
+            <button onClick={handleAddMemberClick}>Add Novo Membro</button>
         </p>
     </div>
 

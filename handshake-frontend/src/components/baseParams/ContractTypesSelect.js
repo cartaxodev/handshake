@@ -5,8 +5,8 @@ function ContractTypesSelect({ contractTypes, setContractType }) {
 
     const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
 
-    function handleChange(event) {
-        const contractId = Number(event.target.value);
+    function handleChange(e) {
+        const contractId = Number(e.target.value);
         let contractType;
 
         for (contractType of contractTypes) {

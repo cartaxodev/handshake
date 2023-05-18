@@ -2,10 +2,10 @@
 exports.getConstructorParams = () => {
     return [
         {
-            name: "deadlineControlConfig_"
-        }, 
-        {
             name: "depositSchedule_"
+        },
+        {
+            name: "deadlineControlConfig_"
         }
     ]
 }

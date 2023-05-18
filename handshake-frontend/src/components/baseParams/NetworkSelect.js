@@ -1,7 +1,7 @@
-function NetworkSelect({ setNetwork }) {
+function NetworkSelect({ network, setNetwork }) {
     
-    function handleChange(event) {
-        setNetwork(Number(event.target.value));
+    function handleChange(e) {
+        setNetwork(Number(e.target.value));
     }
 
     return (
@@ -10,7 +10,7 @@ function NetworkSelect({ setNetwork }) {
                 Selecione a rede blockchain onde será feito o deploy do contrato:
             </div>
             <div>
-                <select onChange={handleChange}>
+                <select onChange={handleChange} value={network}>
                     <option key={1} value={1}>Ethereum</option>
                     <option key={2} value={2}>Polygon</option>
                 </select>

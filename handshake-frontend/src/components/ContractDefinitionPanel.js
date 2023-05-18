@@ -1,5 +1,12 @@
-import MemberList from './nativeParams/MemberList';
-import ObjectiveInput from './nativeParams/ObjectiveInput';
+import DeadlineControlConfigForm from './featuresParams/deadlineControlConfig_/DeadlineControlConfigForm';
+import MaxWithdrawValueInput from './featuresParams/maxWithdrawValue_/MaxWithdrawValueInput';
+import MemberManagerList from './featuresParams/memberManager_/MemberManagerList';
+import MinApprovalsToAddInput from './featuresParams/minApprovalsToAddNewMember_/MinApprovalsToAddInput';
+import MinApprovalsToRemoveInput from './featuresParams/minApprovalsToRemoveMember.js/MinApprovalsToRemoveInput';
+import MinApprovalsToWithdrawInput from './featuresParams/minApprovalsToWithdraw_/MinApprovalsToWithdrawInput';
+import WithdrawalApproversList from './featuresParams/withdrawalApprovers_/WithdrawalApproversList';
+import MemberList from './nativeParams/memberList_/MemberList';
+import ObjectiveInput from './nativeParams/objective_/ObjectiveInput';
 
 
 function ContractDefinitionPanel ({ contractDefinitionState, setContractDefinitionState }) {
@@ -39,6 +46,67 @@ function ContractDefinitionPanel ({ contractDefinitionState, setContractDefiniti
                     <MemberList state={param.stateValue} setState={setState} />
                 </div>
             );
+        }
+        if (param.name === "memberManagers_") {
+            let p;
+            for (p of contractDefinitionState){
+                if (p.name === "memberList_") {
+                    break;
+                }
+            }
+            return (
+                <div key={param.name}>
+                    <MemberManagerList state={param.stateValue} setState={setState} members={p.stateValue} />
+                </div>
+            )
+        }
+        if (param.name === "minApprovalsToAddNewMember_") {
+            return (
+                <div key={param.name}>
+                    <MinApprovalsToAddInput state={param.stateValue} setState={setState} />
+                </div>
+            )
+        }
+        if (param.name === "minApprovalsToRemoveMember_") {
+            return (
+                <div key={param.name}>
+                    <MinApprovalsToRemoveInput state={param.stateValue} setState={setState} />
+                </div>
+            )
+        }
+        if (param.name === "maxWithdrawValue_") {
+            return (
+                <div key={param.name}>
+                    <MaxWithdrawValueInput state={param.stateValue} setState={setState} />
+                </div>
+            )
+        }
+        if (param.name === "minApprovalsToWithdraw_") {
+            return (
+                <div key={param.name}>
+                    <MinApprovalsToWithdrawInput state={param.stateValue} setState={setState} />
+                </div>
+            )
+        }
+        if (param.name === "withdrawalApprovers_") {
+            let p;
+            for (p of contractDefinitionState){
+                if (p.name === "memberList_") {
+                    break;
+                }
+            }
+            return (
+                <div key={param.name}>
+                    <WithdrawalApproversList state={param.stateValue} setState={setState} members={p.stateValue} />
+                </div>
+            )
+        }
+        if (param.name === "deadlineControlConfig_") {
+            return (
+                <div key={param.name}>
+                    <DeadlineControlConfigForm state={param.stateValue} setState={setState} />
+                </div>
+            )
         }
 
         return <div>No data into contract definition template</div>

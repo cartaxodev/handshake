@@ -2,7 +2,9 @@ import NetworkSelect from "./baseParams/NetworkSelect";
 import CurrencySelect from "./baseParams/CurrencySelect";
 import ContractTypesSelect from "./baseParams/ContractTypesSelect";
 
-function BaseParamsPanel({contractTypes, 
+function BaseParamsPanel({contractTypes,
+                        network,
+                        currency,
                         setContractType, 
                         setNetwork, 
                         setCurrency,
@@ -17,8 +19,8 @@ function BaseParamsPanel({contractTypes,
         return (
             <div>
                 <div>
-                    <NetworkSelect setNetwork={setNetwork} />
-                    <CurrencySelect setCurrency={setCurrency} />
+                    <NetworkSelect network={network} setNetwork={setNetwork} />
+                    <CurrencySelect currency={currency} setCurrency={setCurrency} />
                 </div>
                 <div>
                     <ContractTypesSelect contractTypes={contractTypes} setContractType={setContractType}/>

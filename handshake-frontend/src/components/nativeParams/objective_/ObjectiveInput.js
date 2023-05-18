@@ -3,8 +3,8 @@
 
 function ObjectiveInput ({ state, setState }) {
 
-    const handleChange = (event) => {
-        setState("objective_", event.target.value);
+    const handleChange = (e) => {
+        setState("objective_", e.target.value);
     }
 
     return <div>
