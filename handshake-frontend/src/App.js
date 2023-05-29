@@ -41,14 +41,14 @@ function App() {
         for (param of apiResponse.nativeParams) {
             contractStates.push({
                 name: param.name,
-                stateValue: ""
+                stateValue: param.defaultValue
             });
         }
 
         for (param of apiResponse.featuresParams) {
             contractStates.push({
                 name: param.name,
-                stateValue: ""
+                stateValue:  param.defaultValue
             });
         }
 

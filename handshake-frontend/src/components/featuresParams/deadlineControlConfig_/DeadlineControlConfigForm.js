@@ -6,15 +6,6 @@ function DeadlineControlConfigForm ({ state, setState }) {
     const [weeklyFeeEnabled, setWeeklyFeeEnabled] = useState(false);
     const [monthlyFeeEnabled, setMonthlyFeeEnabled] = useState(false);
 
-    if (state === "") {
-        setState("deadlineControlConfig_", {
-            _isControlActive: false,
-            _dailyFee: 0,
-            _weeklyFee: 0,
-            _monthlyFee: 0
-        });
-    }
-
     const handleDailyInputChange = (e) => {
 
         const controlActive = dailyFeeEnabled || weeklyFeeEnabled || monthlyFeeEnabled;

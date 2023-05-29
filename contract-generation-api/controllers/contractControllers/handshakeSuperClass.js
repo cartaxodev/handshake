@@ -4,10 +4,12 @@ exports.getConstructorParams = () => {
 
     const response = [
         {
-            name: "objective_"
+            name: "objective_",
+            defaultValue: ""
         },
         {
-            name: "memberList_"
+            name: "memberList_",
+            defaultValue: []
         },
     ];
 

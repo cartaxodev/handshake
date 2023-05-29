@@ -2,13 +2,16 @@
 exports.getConstructorParams = () => {
     return [
         {
-            name: "withdrawalApprovers_"
+            name: "withdrawalApprovers_",
+            defaultValue: []
         }, 
         {
-            name: "minApprovalsToWithdraw_"
+            name: "minApprovalsToWithdraw_",
+            defaultValue: 0
         },
         {
-            name: "maxWithdrawValue_"
+            name: "maxWithdrawValue_",
+            defaultValue: 0
         }
      ]
 }

@@ -1,12 +1,6 @@
 import WithdrawalApproverInput from "./WithdrawalApproverInput";
 
-
-
 function WithdrawalApproversList ({ members, state, setState }) {
-
-    if (state === "") {
-        setState("withdrawalApprovers_", []);
-    }
 
     const approversToRemove = [];
     for (let approver of state) {

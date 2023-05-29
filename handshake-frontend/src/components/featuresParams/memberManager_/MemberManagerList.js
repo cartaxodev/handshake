@@ -1,12 +1,7 @@
 import MemberManagerInput from "./MemberManagerInput";
 
 
-
 function MemberManagerList ({ members, state, setState }) {
-
-    if (state === "") {
-        setState("memberManagers_", []);
-    }
 
     const managersToRemove = [];
     for (let memberManager of state) {

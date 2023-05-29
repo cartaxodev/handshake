@@ -1,4 +1,5 @@
 import DeadlineControlConfigForm from './featuresParams/deadlineControlConfig_/DeadlineControlConfigForm';
+import DepositSchedulePanel from './featuresParams/depositSchedule_/DepositSchedulePanel';
 import MaxWithdrawValueInput from './featuresParams/maxWithdrawValue_/MaxWithdrawValueInput';
 import MemberManagerList from './featuresParams/memberManager_/MemberManagerList';
 import MinApprovalsToAddInput from './featuresParams/minApprovalsToAddNewMember_/MinApprovalsToAddInput';
@@ -105,6 +106,13 @@ function ContractDefinitionPanel ({ contractDefinitionState, setContractDefiniti
             return (
                 <div key={param.name}>
                     <DeadlineControlConfigForm state={param.stateValue} setState={setState} />
+                </div>
+            )
+        }
+        if (param.name === "depositSchedule_") {
+            return (
+                <div key={param.name}>
+                    <DepositSchedulePanel state={param.stateValue} setState={setState} />
                 </div>
             )
         }

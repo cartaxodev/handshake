@@ -2,13 +2,16 @@
 exports.getConstructorParams = () => {
     return [
         {
-            name: "memberManagers_"
+            name: "memberManagers_",
+            defaultValue: []
         }, 
         {
-            name: "minApprovalsToAddNewMember_"
+            name: "minApprovalsToAddNewMember_",
+            defaultValue: 0
         },
         {
-            name: "minApprovalsToRemoveMember_"
+            name: "minApprovalsToRemoveMember_",
+            defaultValue: 0
         }
     ]
 }
