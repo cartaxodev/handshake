@@ -35,6 +35,7 @@ function App() {
 
     const buildContractDefinitionStates = async (apiResponse) => {
 
+
         
         const contractStates = [];
 
