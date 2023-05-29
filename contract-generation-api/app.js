@@ -1,11 +1,14 @@
 const express = require("express");
+const cors = require('cors');
 //const morgan = require("morgan");
 const contractTypeRouter = require("./routes/contractTypeRoutes");
-const concreteContractRouter = require("./routes/concreteContractRoutes");
+const contractTemplateRouter = require("./routes/contractTemplateRoutes");
 
 const app = express();
 
 //MIDDLEWARES
+app.use(cors());
+
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -15,8 +18,8 @@ app.use((req, res, next) => {
 
 
 //ROUTES
-app.use("/api/v1/contract-type", contractTypeRouter);
-app.use("/api/v1/concrete-contract", concreteContractRouter);
+app.use("/api/v1/contractType", contractTypeRouter);
+app.use("/api/v1/contractTemplate", contractTemplateRouter);
 
 
 module.exports = app;
