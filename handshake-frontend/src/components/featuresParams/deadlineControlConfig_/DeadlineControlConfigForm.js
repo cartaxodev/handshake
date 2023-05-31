@@ -1,6 +1,13 @@
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { changeDeadlineControlConfig } from '../../../store';
 
-function DeadlineControlConfigForm ({ state, setState }) {
+function DeadlineControlConfigForm () {
+
+    const dispatch = useDispatch();
+    const state = useSelector((state) => {
+        return state.deadlineControlConfig.deadlineControlConfig_;
+    });
 
     const [dailyFeeEnabled, setDailyFeeEnabled] = useState(false);
     const [weeklyFeeEnabled, setWeeklyFeeEnabled] = useState(false);
@@ -12,12 +19,11 @@ function DeadlineControlConfigForm ({ state, setState }) {
         const value = Number(e.target.value);
 
         if (!isNaN(value)) {
-            setState("deadlineControlConfig_", {
+            dispatch(changeDeadlineControlConfig({
+                ...state,
                 _isControlActive: controlActive,
-                _dailyFee: value,
-                _weeklyFee: state._weeklyFee,
-                _monthlyFee: state._monthlyFee
-            });
+                _dailyFee: value
+            }));
         }
     }
 
@@ -27,12 +33,11 @@ function DeadlineControlConfigForm ({ state, setState }) {
         const value = Number(e.target.value);
 
         if (!isNaN(value)) {
-            setState("deadlineControlConfig_", {
+            dispatch(changeDeadlineControlConfig({
+                ...state,
                 _isControlActive: controlActive,
-                _dailyFee: state._dailyFee,
-                _weeklyFee: value,
-                _monthlyFee: state._monthlyFee
-            });
+                _weeklyFee: value
+            }));
         }
     }
 
@@ -42,26 +47,37 @@ function DeadlineControlConfigForm ({ state, setState }) {
         const value = Number(e.target.value);
 
         if (!isNaN(value)) {
-            setState("deadlineControlConfig_", {
+            dispatch(changeDeadlineControlConfig({
+                ...state,
                 _isControlActive: controlActive,
-                _dailyFee: state._dailyFee,
-                _weeklyFee: state._weeklyFee,
                 _monthlyFee: value
-            });
+            }));
         }
     }
 
 
     const handleDailyCheckboxChange = (e) => {
         setDailyFeeEnabled(e.target.checked);
+        if (e.target.checked === false) {
+            e.target.value = 0;
+            handleDailyInputChange(e);
+        }
     }
 
     const handleWeeklyCheckboxChange = (e) => {
         setWeeklyFeeEnabled(e.target.checked);
+        if (e.target.checked === false) {
+            e.target.value = 0;
+            handleWeeklyInputChange(e);
+        }
     }
 
     const handleMonthlyCheckboxChange = (e) => {
         setMonthlyFeeEnabled(e.target.checked);
+        if (e.target.checked === false) {
+            e.target.value = 0;
+            handleMonthlyInputChange(e);
+        }
     }
 
     return (

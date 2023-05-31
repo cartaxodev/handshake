@@ -1,15 +1,25 @@
+import { useDispatch, useSelector } from 'react-redux';
+import { changeObjective } from '../../../store';
 
+function ObjectiveInput () {
 
-
-function ObjectiveInput ({ state, setState }) {
+    const dispatch = useDispatch();
+    const objective = useSelector((state) => {
+        return state.objective.objective_;
+    });
 
     const handleChange = (e) => {
-        setState("objective_", e.target.value);
+        dispatch(changeObjective(e.target.value));
     }
 
     return <div>
         <p>
-            Especifique o objetivo do contrato: <input value={state} onChange={handleChange} />
+            Especifique o objetivo do contrato:
+             <input 
+                //value={state}
+                value={objective} 
+                onChange={handleChange} 
+            />
         </p>
     </div>
 

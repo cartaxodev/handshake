@@ -1,18 +1,26 @@
+import { useDispatch, useSelector } from "react-redux";
+import { changeMaxWithdrawValue } from "../../../store";
 
+function MaxWithdrawValueInput () {
 
-function MaxWithdrawValueInput ({ state, setState }) {
+    const dispatch = useDispatch();
+    const state = useSelector((state) => {
+        return state.maxWithdrawValue.maxWithdrawValue_;
+    })
 
     const handleChange = (e) => {
         const value =  Number(e.target.value);
         if (!isNaN(value)) {
-            setState("maxWithdrawValue_", value);
+            dispatch(changeMaxWithdrawValue(value));
         }
     }
 
     return (
         <div>
             <p>Qual o valor máximo de cada saque de valores do contrato?</p>
-            <input value={state} onChange={handleChange} />
+            <input 
+                value={state} 
+                onChange={handleChange} />
         </div>
     );
 }

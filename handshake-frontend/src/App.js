@@ -3,6 +3,10 @@ import { useState } from 'react';
 import BaseParamsPanel from './components/BaseParamsPanel';
 import ContractDefinitionPanel from './components/ContractDefinitionPanel';
 
+//Redux Stuff:
+import { store } from './store';
+import { useSelector } from 'react-redux';
+
 function App() {
 
     //State for contractTypes fetched from the API
@@ -35,8 +39,6 @@ function App() {
 
     const buildContractDefinitionStates = async (apiResponse) => {
 
-
-        
         const contractStates = [];
 
         let param;
@@ -73,18 +75,21 @@ function App() {
                                 setCurrency={setCurrency}
                                 handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
             </div>
-            {/* <div>
-                <p>Contract Template:</p>
-                {JSON.stringify(contractTemplate)}
-            </div> */}
             <div>
-                <ContractDefinitionPanel contractDefinitionState={contractDefinitionState}
-                                            setContractDefinitionState={setContractDefinitionState}/>
+                <ContractDefinitionPanel contractDefinitionState={contractDefinitionState}/>
             </div>
             <div>
                 <p>
                     {JSON.stringify(contractDefinitionState)}
                 </p>
+            </div>
+            <div>
+                <p>
+                    REDUX STATES:
+                </p>
+                {JSON.stringify(useSelector((state) => {
+                    return state;
+                }))}
             </div>
         </div>
     );

@@ -1,14 +1,17 @@
+import { useDispatch } from "react-redux";
+import { addWithdrawalApprover, removeWithdrawalApprover } from "../../../store";
 
+function WithdrawalApproverInput ({ member, isApprover }) {
 
-function WithdrawalApproverInput ({ member, isApprover, addWithdrawalApprover, removeWithdrawalApprover }) {
+    const dispatch = useDispatch();
 
     const handleCheckboxChange = (e) => {
 
         if (isApprover === false) {
-            addWithdrawalApprover(Number(e.target.value));
+            dispatch(addWithdrawalApprover(Number(e.target.value)));
         }
         else {
-            removeWithdrawalApprover(Number(e.target.value));
+            dispatch(removeWithdrawalApprover(Number(e.target.value)));
         }
     }
 

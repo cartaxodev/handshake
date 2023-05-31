@@ -1,14 +1,17 @@
+import { useDispatch } from "react-redux";
+import { addMemberManager, removeMemberManager } from "../../../store";
 
+function MemberManagerInput ({ member, isManager }) {
 
-function MemberManagerInput ({ member, isManager, addMemberManager, removeMemberManager }) {
+    const dispatch = useDispatch();
 
     const handleCheckboxChange = (e) => {
 
         if (isManager === false) {
-            addMemberManager(Number(e.target.value));
+            dispatch(addMemberManager(Number(e.target.value)));
         }
         else {
-            removeMemberManager(Number(e.target.value));
+            dispatch(removeMemberManager(Number(e.target.value)));
         }
     }
 

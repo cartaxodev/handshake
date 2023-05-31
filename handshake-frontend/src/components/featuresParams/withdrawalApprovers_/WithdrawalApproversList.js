@@ -1,63 +1,20 @@
 import WithdrawalApproverInput from "./WithdrawalApproverInput";
+import { useSelector } from 'react-redux';
 
-function WithdrawalApproversList ({ members, state, setState }) {
+function WithdrawalApproversList () {
 
-    const approversToRemove = [];
-    for (let approver of state) {
-        
-        let memberFound = false;
-        for (let member of members) {
-            if (approver._id === member._id) {
-                memberFound = true;
-            }
-        }
-        if (!memberFound) {
-            approversToRemove.push(approver);
-        }
-    }
+    const members = useSelector((state) => {
+        return state.memberList.memberList_;
+    });
 
-    if (approversToRemove.length > 0) {
-        const approvers = state.filter((approver) => {
-            let remove = false;
-            for (let a of approversToRemove) {
-                if (approver._id === a._id) {
-                    remove = true;
-                }
-            }
-            return !remove;
-        });
-        setState("withdrawalApprovers_", approvers);
-    }
-    
-    const addWithdrawalApprover = (memberId) => {
-        const approvers = [];
-        for (let approver of state) {
-            approvers.push(approver);
-        }
-
-        for (let member of members) {
-            if (member._id === memberId) {
-                approvers.push({
-                    _id: memberId
-                });
-            }
-        }
-
-        setState("withdrawalApprovers_", approvers);
-    }
-
-    const removeWithdrawalApprover = (memberId) => {
-        const approvers = state.filter((approver) => {
-            return (approver._id !== memberId);
-        });
-
-        setState("withdrawalApprovers_", approvers);
-    }
+    const withdrawalApprovers = useSelector((state) => {
+        return state.withdrawalApprovers.withdrawalApprovers_;
+    });
 
     const isApprover = (memberId) => {
         let approver = false;
-        for (let appr of state) {
-            if (memberId === appr._id) {
+        for (let appr of withdrawalApprovers) {
+            if (memberId === appr) {
                 approver = true;
                 break;
             }
@@ -65,21 +22,15 @@ function WithdrawalApproversList ({ members, state, setState }) {
         return approver;
     }
 
-    let renderedMembers;
-    
-    if (members !== "") {
-        renderedMembers = members.map((member) => {
-            return (
-                <div key={member._id}>
-                   <WithdrawalApproverInput member={member}
-                                       isApprover={isApprover(member._id)}
-                                       addWithdrawalApprover={addWithdrawalApprover}
-                                       removeWithdrawalApprover={removeWithdrawalApprover}
-                                       />
-                </div>
-            );
-        });
-    }
+    let renderedMembers = members.map((member) => {
+        return (
+            <div key={member._id}>
+                <WithdrawalApproverInput member={member}
+                                    isApprover={isApprover(member._id)}
+                                    />
+            </div>
+        );
+    });
 
     return (
         <div>

@@ -1,8 +1,14 @@
 import { useState } from "react";
 import DepositSchedulingForm from "./DepositSchedulingForm";
+import { useDispatch, useSelector } from "react-redux";
+import { createDepositSchedule } from "../../../store";
 
+function DepositSchedulePanel () {
 
-function DepositSchedulePanel ({ state, setState }) {
+    const dispatch = useDispatch();
+    const state = useSelector((state) => {
+        return state.depositSchedule.depositSchedule_;
+    });
 
     const [numDeposits, setNumDeposits] = useState(0);
 
@@ -14,28 +20,7 @@ function DepositSchedulePanel ({ state, setState }) {
     }
 
     const handleCreateScheduleClick = (e) => {
-        let schedulings = [];
-        for (let i = 0; i < numDeposits; i++) {
-            schedulings.push({
-                _value: 0,
-                _deadlineTimestamp: 0,
-                _executionInfo: {}
-            });
-        }
-        setState("depositSchedule_", schedulings);
-    }
-
-    const setDepositSchedulingState = (index, newState) => {
-        let schedulings = [];
-        for (let i = 0; i < state.length; i++) {
-            if (i === index) {
-                schedulings.push(newState);
-            }
-            else {
-                schedulings.push(state[i]);
-            }
-        }
-        setState("depositSchedule_", schedulings);
+        dispatch(createDepositSchedule(numDeposits));
     }
 
     function calcTotal() {
@@ -46,13 +31,13 @@ function DepositSchedulePanel ({ state, setState }) {
         return sum;
     }
     
-    let renderedScheduling = state.map((el, index) => {
+    let renderedScheduling = state.map((scheduling, index) => {
 
         return (
             <div key={index}>
                 <DepositSchedulingForm index={index}
-                                       state={state[index]}
-                                       setState={setDepositSchedulingState} />
+                                       scheduling={scheduling}
+                                       />
             </div>
         );
     });
@@ -61,7 +46,10 @@ function DepositSchedulePanel ({ state, setState }) {
         <div>
             <div>
                 Informe o número de depósitos que será realizado por cada membro:
-                <input onChange={handleInputChange} value={numDeposits}/>
+                <input 
+                    onChange={handleInputChange} 
+                    value={numDeposits}
+                    type="number"/>
             </div>
             <div>
                 <button onClick={handleCreateScheduleClick}>Criar Calendário de Depósitos</button>

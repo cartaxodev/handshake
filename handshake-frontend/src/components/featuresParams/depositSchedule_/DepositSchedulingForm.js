@@ -1,26 +1,33 @@
+import { useDispatch } from "react-redux";
+import { changeDepositScheduling } from "../../../store";
 
+function DepositSchedulingForm ({ index, scheduling }) {
 
-function DepositSchedulingForm ({ index, state, setState }) {
+    const dispatch = useDispatch();
 
     const handleValueChange = (e) => {
         const value = Number(e.target.value);
         if(!isNaN(value)) {
-            setState(index, {
-                _value: value,
-                _deadlineTimestamp: state._deadlineTimestamp,
-                _executionInfo: {}
-            });
+            dispatch(changeDepositScheduling({
+                index: index,
+                scheduling: {
+                    ...scheduling,
+                    _value: value
+                }
+            }));
         }
     }
 
     const handleDeadlineChange = (e) => {
         const deadline = Number(e.target.value);
         if(!isNaN(deadline)) {
-            setState(index, {
-                _value: state._value,
-                _deadlineTimestamp: deadline,
-                _executionInfo: {}
-            });
+            dispatch(changeDepositScheduling({
+                index: index,
+                scheduling: {
+                    ...scheduling,
+                    _deadlineTimestamp: deadline
+                }
+            }));
         }
     }
 
@@ -31,10 +38,10 @@ function DepositSchedulingForm ({ index, state, setState }) {
                 Depósito #{index + 1}:
             </div>
             <div>
-                Valor: <input onChange={handleValueChange} value={state._value}/>
+                Valor: <input onChange={handleValueChange} value={scheduling._value}/>
             </div>
             <div>
-                Deadline: <input onChange={handleDeadlineChange} value={state._deadlineTimestamp}/>
+                Deadline: <input onChange={handleDeadlineChange} value={scheduling._deadlineTimestamp}/>
             </div>
         </div>
     );
