@@ -1,7 +1,8 @@
 import { useState } from "react";
 import DepositSchedulingForm from "./DepositSchedulingForm";
 import { useDispatch, useSelector } from "react-redux";
-import { createDepositSchedule } from "../../../store";
+import { createDepositSchedule } from "../../../../store";
+import { Typography, Input, Button } from "@mui/material";
 
 function DepositSchedulePanel () {
 
@@ -45,21 +46,34 @@ function DepositSchedulePanel () {
     return (
         <div>
             <div>
-                Informe o número de depósitos que será realizado por cada membro:
-                <input 
+                <Typography>
+                    Informe o número de depósitos que será realizado por cada membro:
+                </Typography>
+                <Input
+                    variant='outlined'
+                    size="small"
+                    defaultValue={0}
+                    value={numDeposits} 
                     onChange={handleInputChange} 
-                    value={numDeposits}
-                    type="number"/>
+                    type="number"
+                />
             </div>
             <div>
-                <button onClick={handleCreateScheduleClick}>Criar Calendário de Depósitos</button>
+                {/* <button onClick={handleCreateScheduleClick}>Criar Calendário de Depósitos</button> */}
+                <Button 
+                        size="small"
+                        variant="outlined"
+                        onClick={handleCreateScheduleClick}>Criar Calendário de Depósitos</Button>
             </div>
             <div>
                 <p/>
                 {renderedScheduling}
             </div>
             <div>
-                Valor total a ser depositado por cada membro: {calcTotal()}
+                <p/>
+                <Typography>
+                    Valor total a ser depositado por cada membro: {calcTotal()}
+                </Typography>
             </div>
         </div>
     );

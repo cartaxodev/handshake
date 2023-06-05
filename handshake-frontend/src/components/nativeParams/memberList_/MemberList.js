@@ -2,6 +2,10 @@ import MemberForm from "./MemberForm";
 import { useDispatch, useSelector } from "react-redux";
 import { addMember } from "../../../store";
 
+//MUI
+import { Button, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 function MemberList () {
 
     const dispatch = useDispatch();
@@ -26,13 +30,29 @@ function MemberList () {
         </div>
         );
     });
-    
+
     return <div>
-            Informe abaixo os dados de cada membro participante do contrato:
-            {memberInputs}
-        <p>
-            <button onClick={handleAddMemberClick}>Add Novo Membro</button>
-        </p>
+        <Accordion>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+                >
+                <Typography>Membros:</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Typography>
+                    Informe abaixo os dados de cada membro participante do contrato:
+                </Typography>
+                {memberInputs}
+                <p>
+                    <Button 
+                        size="small"
+                        variant="outlined"
+                        onClick={handleAddMemberClick}>Adicionar Membro</Button>
+                </p>
+            </AccordionDetails>
+        </Accordion>
     </div>
 
 }

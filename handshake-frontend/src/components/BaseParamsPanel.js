@@ -1,6 +1,7 @@
 import NetworkSelect from "./baseParams/NetworkSelect";
 import CurrencySelect from "./baseParams/CurrencySelect";
 import ContractTypesSelect from "./baseParams/ContractTypesSelect";
+import { Button}  from "@mui/material";
 
 function BaseParamsPanel({contractTypes,
                         network,
@@ -26,7 +27,10 @@ function BaseParamsPanel({contractTypes,
                     <ContractTypesSelect contractTypes={contractTypes} setContractType={setContractType}/>
                 </div>
                 <div>
-                    <button onClick={handleDefineClausesButtonClick}>Definir cláusulas</button>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleDefineClausesButtonClick}>Definir cláusulas</Button>
                 </div>
             </div>  
         );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { changeDeadlineControlConfig } from '../../../store';
+import { changeDeadlineControlConfig } from '../../../../store';
+import { Typography, FormControlLabel, Checkbox, Input } from '@mui/material';
 
 function DeadlineControlConfigForm () {
 
@@ -81,30 +82,63 @@ function DeadlineControlConfigForm () {
     }
 
     return (
-    <div>
-        <p/>
-            <div>
+        <div>
+            <Typography>
                 Informe qual deve ser a taxa por atraso nos depósitos (se houver):
+            </Typography>
+
+            <div>
+                <FormControlLabel label={"Daily Fee (%): "} control={
+                    <Checkbox
+                        onChange={handleDailyCheckboxChange}
+                        checked={dailyFeeEnabled}>
+                    </Checkbox>
+                } />
+                <Input
+                    variant='outlined'
+                    size="small"
+                    defaultValue={0}
+                    value={state._dailyFee} 
+                    onChange={handleDailyInputChange}
+                    disabled={!dailyFeeEnabled}
+                    type="number"
+                />
             </div>
             <div>
-                <input type="checkbox" onChange={handleDailyCheckboxChange} />
-                Daily Fee (%): <input value={state._dailyFee} 
-                                      disabled={!dailyFeeEnabled} 
-                                      onChange={handleDailyInputChange}/>
+                <FormControlLabel label={"Weekly Fee (%): "} control={
+                    <Checkbox
+                        onChange={handleWeeklyCheckboxChange}
+                        checked={weeklyFeeEnabled}>
+                    </Checkbox>
+                } />
+                <Input
+                    variant='outlined'
+                    size="small"
+                    defaultValue={0}
+                    value={state._weeklyFee} 
+                    onChange={handleWeeklyInputChange}
+                    disabled={!weeklyFeeEnabled}
+                    type="number"
+                />
             </div>
             <div>
-                <input type="checkbox" onChange={handleWeeklyCheckboxChange} />
-                Weekly Fee (%): <input value={state._weeklyFee} 
-                                       disabled={!weeklyFeeEnabled}
-                                       onChange={handleWeeklyInputChange} />
+                <FormControlLabel label={"Monthly Fee (%): "} control={
+                    <Checkbox
+                        onChange={handleMonthlyCheckboxChange}
+                        checked={monthlyFeeEnabled}>
+                    </Checkbox>
+                } />
+                <Input
+                    variant='outlined'
+                    size="small"
+                    defaultValue={0}
+                    value={state._monthlyFee} 
+                    onChange={handleMonthlyInputChange}
+                    disabled={!monthlyFeeEnabled}
+                    type="number"
+                />
             </div>
-            <div>
-                <input type="checkbox" onChange={handleMonthlyCheckboxChange} />
-                Monthly Fee (%): <input value={state._monthlyFee} 
-                                        disabled={!monthlyFeeEnabled} 
-                                        onChange={handleMonthlyInputChange}/>
-            </div>
-    </div>
+        </div>
     );
 
 }

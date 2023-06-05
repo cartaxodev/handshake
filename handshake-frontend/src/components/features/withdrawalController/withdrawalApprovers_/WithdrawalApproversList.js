@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material";
 import WithdrawalApproverInput from "./WithdrawalApproverInput";
 import { useSelector } from 'react-redux';
 
@@ -34,7 +35,9 @@ function WithdrawalApproversList () {
 
     return (
         <div>
-            <p>Selecione abaixo quais dos membros poderão autorizar saques de valores do contrato:</p>
+            <Typography>
+                Selecione abaixo quais dos membros poderão autorizar saques de valores do contrato:
+            </Typography>
             {renderedMembers}
         </div>
     );

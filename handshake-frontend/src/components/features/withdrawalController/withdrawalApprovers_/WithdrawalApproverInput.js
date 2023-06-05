@@ -1,5 +1,8 @@
 import { useDispatch } from "react-redux";
-import { addWithdrawalApprover, removeWithdrawalApprover } from "../../../store";
+import { addWithdrawalApprover, removeWithdrawalApprover } from "../../../../store";
+
+//MUI
+import { FormControlLabel, Checkbox } from "@mui/material";
 
 function WithdrawalApproverInput ({ member, isApprover }) {
 
@@ -17,12 +20,13 @@ function WithdrawalApproverInput ({ member, isApprover }) {
 
     return (
         <div>
-            {member._login}: 
-            <input type="checkbox" 
-                   onChange={handleCheckboxChange}
-                   value={member._id}
-                   checked={isApprover}>
-            </input>
+            <FormControlLabel label={member._login} control={
+                <Checkbox
+                    onChange={handleCheckboxChange}
+                    value={member._id}
+                    checked={isApprover}>
+            </Checkbox>
+            } />
         </div>
     );
 }

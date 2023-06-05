@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 function ContractTypesSelect({ contractTypes, setContractType }) {
@@ -20,24 +22,37 @@ function ContractTypesSelect({ contractTypes, setContractType }) {
     }
 
     const renderedOptions = contractTypes.map((contractType) => {
-        return <option key={contractType.id} value={contractType.id}>{contractType.name}</option>
+        return <MenuItem 
+                key={contractType.id} 
+                value={contractType.id}>{contractType.name}
+            </MenuItem>
     });
 
-    return (
-        <div>
-            <div>
-                Selecione o tipo de contrato que deseja gerar:
-            </div>
-            <div>
-                <select onChange={handleChange}>
+ 
+    return <div>
+        <Accordion>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+                >
+                <Typography>Tipo de contrato</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Typography>
+                    Selecione o tipo de contrato que deseja elaborar
+                </Typography>
+                <p/>
+                <Select
+                    label="Type"
+                    size="small"
+                    onChange={handleChange} 
+                >
                     {renderedOptions}
-                </select>
-            </div>
-            <div>
-                Descrição do contrato: {contractDescription}
-            </div>
-        </div>
-    );
+                </Select>
+            </AccordionDetails>
+        </Accordion>
+    </div>
 }
 
 export default ContractTypesSelect;

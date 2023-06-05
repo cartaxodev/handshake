@@ -1,6 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
 import { removeMember, changeMemberLogin, changeMemberMainAddress } from "../../../store";
 
+//MUI
+import { TextField, Typography, Button, Card } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete'
+
 function MemberForm ({ memberId }) {
 
     const dispatch = useDispatch();
@@ -34,23 +38,38 @@ function MemberForm ({ memberId }) {
     }
 
     return <div>
-        <p> ID: {memberId} </p>
-            <div>
-                Login: <input 
-                            value={member._login}
-                            onChange={handleLoginChange} 
-                        />
-            </div>
-            <div>
-                Wallet Address: <input  
-                                    value={member._mainAddress} 
-                                    onChange={handleAddressChange} 
-                                />
-            </div>
-            <div>
-                <button onClick={handleRemove}>Remove Membro</button>
-            </div>
+            <Card spacing={1}>
+                <Typography>
+                    <p>ID: {memberId}</p>
+                </Typography>
 
+                <TextField
+                    required
+                    label="Login"
+                    size="small"
+                    defaultValue=""
+                    value={member._login}
+                    onChange={handleLoginChange}
+                />
+
+                <TextField
+                    required
+                    label="Wallet address"
+                    size="small"
+                    defaultValue=""
+                    value={member._mainAddress}
+                    onChange={handleAddressChange}
+                />
+
+                <Button
+                    size="small"
+                    variant="text"
+                    onClick={handleRemove}>
+                        <DeleteIcon 
+                            fontSize="small"
+                            color="error"/>
+                </Button>
+            </Card>
     </div>
 
 }

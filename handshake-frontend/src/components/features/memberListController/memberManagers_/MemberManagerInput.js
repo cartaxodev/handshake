@@ -1,5 +1,8 @@
 import { useDispatch } from "react-redux";
-import { addMemberManager, removeMemberManager } from "../../../store";
+import { addMemberManager, removeMemberManager } from "../../../../store";
+
+//MUI
+import { Checkbox, FormControlLabel } from "@mui/material";
 
 function MemberManagerInput ({ member, isManager }) {
 
@@ -17,12 +20,13 @@ function MemberManagerInput ({ member, isManager }) {
 
     return (
         <div>
-            {member._login}: 
-            <input type="checkbox" 
-                   onChange={handleCheckboxChange}
-                   value={member._id}
-                   checked={isManager}>
-            </input>
+            <FormControlLabel label={member._login} control={
+                <Checkbox
+                    onChange={handleCheckboxChange}
+                    value={member._id}
+                    checked={isManager}>
+            </Checkbox>
+            } />
         </div>
     );
 }
