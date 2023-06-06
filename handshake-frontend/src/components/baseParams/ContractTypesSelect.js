@@ -1,43 +1,57 @@
-import { useState } from "react";
 
+//MUI
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-function ContractTypesSelect({ contractTypes, setContractType }) {
+//Redux Stuff:
+import { useDispatch, useSelector } from "react-redux";
+import { changeContractType } from "../../store";
 
-    const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
+function ContractTypesSelect({ contractTypes }) {
+
+    //const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
+    const dispatch = useDispatch();
+    const contractType = useSelector((state) => {
+        return state.contractType.contractType;
+    });
 
     function handleChange(e) {
-        const contractId = Number(e.target.value);
-        let contractType;
-
-        for (contractType of contractTypes) {
-            if (contractId === contractType.id) {
-                setContractDescription(contractType.description);
-                break;
-            }
-        }
-
-        setContractType(contractId);
+        dispatch(changeContractType(Number(e.target.value)));
     }
 
     const renderedOptions = contractTypes.map((contractType) => {
-        return <option key={contractType.id} value={contractType.id}>{contractType.name}</option>
+        return <MenuItem 
+                key={contractType.id} 
+                value={contractType.id}>{contractType.name}
+            </MenuItem>
     });
 
-    return (
-        <div>
-            <div>
-                Selecione o tipo de contrato que deseja gerar:
-            </div>
-            <div>
-                <select onChange={handleChange}>
+ 
+    return <div>
+        <Accordion>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+                >
+                <Typography>Tipo de contrato</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Typography>
+                    Selecione o tipo de contrato que deseja elaborar
+                </Typography>
+                <p/>
+                <Select
+                    label="Type"
+                    size="small"
+                    onChange={handleChange} 
+                    value={contractType}
+                >
                     {renderedOptions}
-                </select>
-            </div>
-            <div>
-                Descrição do contrato: {contractDescription}
-            </div>
-        </div>
-    );
+                </Select>
+            </AccordionDetails>
+        </Accordion>
+    </div>
 }
 
 export default ContractTypesSelect;

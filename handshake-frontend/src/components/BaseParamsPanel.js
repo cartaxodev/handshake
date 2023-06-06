@@ -1,16 +1,10 @@
 import NetworkSelect from "./baseParams/NetworkSelect";
 import CurrencySelect from "./baseParams/CurrencySelect";
 import ContractTypesSelect from "./baseParams/ContractTypesSelect";
+import { Button}  from "@mui/material";
 
-function BaseParamsPanel({contractTypes,
-                        network,
-                        currency,
-                        setContractType, 
-                        setNetwork, 
-                        setCurrency,
+function BaseParamsPanel({contractTypes,  
                         handleDefineClausesButtonClick}) {
-    
-    
     
     if (contractTypes === undefined) {
         return <div></div>
@@ -19,14 +13,17 @@ function BaseParamsPanel({contractTypes,
         return (
             <div>
                 <div>
-                    <NetworkSelect network={network} setNetwork={setNetwork} />
-                    <CurrencySelect currency={currency} setCurrency={setCurrency} />
+                    <NetworkSelect />
+                    <CurrencySelect />
                 </div>
                 <div>
-                    <ContractTypesSelect contractTypes={contractTypes} setContractType={setContractType}/>
+                    <ContractTypesSelect contractTypes={contractTypes} />
                 </div>
                 <div>
-                    <button onClick={handleDefineClausesButtonClick}>Definir cláusulas</button>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleDefineClausesButtonClick}>Definir cláusulas</Button>
                 </div>
             </div>  
         );

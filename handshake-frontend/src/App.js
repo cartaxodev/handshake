@@ -1,7 +1,14 @@
+import React from 'react';
 import api from './api';
 import { useState } from 'react';
 import BaseParamsPanel from './components/BaseParamsPanel';
 import ContractDefinitionPanel from './components/ContractDefinitionPanel';
+
+//MUI Stuff:
+import { Grid, Paper, Button, Typography } from '@mui/material'
+
+//Redux Stuff:
+import { useSelector } from 'react-redux';
 
 function App() {
 
@@ -9,16 +16,20 @@ function App() {
     const [contractTypes, setContractTypes] = useState(undefined);
 
     //States for basic params
-    const [currency, setCurrency] = useState(1);
-    const [network, setNetwork] = useState(1);
-    const [contractType, setContractType] = useState(1);
+    const network = useSelector((state) => {
+        return state.network.network;
+    });
+
+    const currency = useSelector((state) => {
+        return state.currency.currency;
+    });
+    
+    const contractType = useSelector((state) => {
+        return state.contractType.contractType;
+    });
 
     //States for contractTemplate fecthed from the API
-    const [contractTemplate, setContractTemplate] = useState(undefined);
-
-    //Array of states for each contract template field.
-    //This array is used to provide state to each component of contract definition
-    const [contractDefinitionState, setContractDefinitionState] = useState([]);
+    const [contractTemplate, setContractTemplate] = useState({});
 
     const handleNewContractButtonClick = async () => {
         const apiResponse = await api.getContractTypes();
@@ -26,64 +37,57 @@ function App() {
     }
 
     const handleDefineClausesButtonClick = async () => {
+
         const apiResponse = await api.getContractTemplate(network,
                                                         currency,
                                                         contractType);
         setContractTemplate(apiResponse);
-        buildContractDefinitionStates(apiResponse);
-    }
-
-    const buildContractDefinitionStates = async (apiResponse) => {
-
-        const contractStates = [];
-
-        let param;
-        for (param of apiResponse.nativeParams) {
-            contractStates.push({
-                name: param.name,
-                stateValue: param.defaultValue
-            });
-        }
-
-        for (param of apiResponse.featuresParams) {
-            contractStates.push({
-                name: param.name,
-                stateValue:  param.defaultValue
-            });
-        }
-
-        setContractDefinitionState(contractStates);
     }
 
     return (
         <div>
             <div>
-                <button onClick={handleNewContractButtonClick}>
-                    Elaborar Novo Contrato
-                </button>
+                <Button 
+                    variant="contained" 
+                    size="small"
+                    onClick={handleNewContractButtonClick}>
+                        Elaborar Novo Contrato
+                </Button>
             </div>
             <div>
-                <BaseParamsPanel contractTypes={contractTypes}
-                                network={network}
-                                currency={currency}
-                                setContractType={setContractType}
-                                setNetwork={setNetwork}
-                                setCurrency={setCurrency}
-                                handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
+                    <BaseParamsPanel contractTypes={contractTypes}
+                                    handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
             </div>
-            {/* <div>
-                <p>Contract Template:</p>
-                {JSON.stringify(contractTemplate)}
-            </div> */}
-            <div>
-                <ContractDefinitionPanel contractDefinitionState={contractDefinitionState}
-                                            setContractDefinitionState={setContractDefinitionState}/>
-            </div>
-            <div>
-                <p>
-                    {JSON.stringify(contractDefinitionState)}
-                </p>
-            </div>
+
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={1} style={{ padding: 16 }}>
+                        <Typography>
+                            <p><b>DEFINIÇÃO DE REGRAS</b></p>
+                        </Typography>
+                        
+                        <div>
+                            <ContractDefinitionPanel contractTemplate={contractTemplate}/>
+                        </div>
+                        {/* <Paper>
+                            <p>
+                                REDUX STATES:
+                            </p>
+                            {JSON.stringify(useSelector((state) => {
+                                return state;
+                            }))}
+                        </Paper> */}
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={1} style={{ padding: 16 }}>
+                        <Typography>
+                            <p><b>CLÁUSULAS CONTRATUAIS</b></p>
+                        </Typography>   
+                    </Paper>
+                </Grid>
+            </Grid>
         </div>
     );
 }

@@ -1,22 +1,47 @@
-function CurrencySelect({ currency, setCurrency }) {
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+//Redux Stuff:
+import { useDispatch, useSelector } from 'react-redux';
+import { changeCurrency } from '../../store';
+
+function CurrencySelect() {
+
+    const dispatch = useDispatch();
+    const currency = useSelector((state) => {
+        return state.currency.currency;
+    });
 
     function handleChange(e) {
-        setCurrency(Number(e.target.value))
+        dispatch(changeCurrency(e.target.value));
     }
 
-    return (
-        <div>
-            <div>
-                Selecione a moeda digital que será utilizada para as transações financeiras deste contrato:
-            </div>
-            <div>
-                <select onChange={handleChange} value={currency}>
-                <option key={1} value={1}>{"Ether (ETH)"}</option>
-                <option key={2} value={2}>{"USDT"}</option>
-                </select>
-            </div>
-        </div>
-    );
+    return <div>
+        <Accordion>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+                >
+                <Typography>Moeda do contrato</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Typography>
+                    Selecione a moeda digital que será utilizada para as transações financeiras deste contrato
+                </Typography>
+                <p/>
+                <Select
+                    label="Currency"
+                    size="small"
+                    onChange={handleChange} 
+                    value={currency}
+                >
+                    <MenuItem key={1} value={1}>{"Ether (ETH)"}</MenuItem>
+                    <MenuItem key={2} value={2}>{"USDT"}</MenuItem>
+                </Select>
+            </AccordionDetails>
+        </Accordion>
+    </div>
 }
 
 export default CurrencySelect;

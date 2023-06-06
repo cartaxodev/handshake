@@ -10,24 +10,65 @@ const concreteContractTemplates =
         id: 1,
         name: "GraduationQuota_ETH",
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
-        featuresParamsFunctions: [
-            memberListController.getConstructorParams,
-            depositScheduler.getConstructorParams,
-            withdrawalController.getConstructorParams
-        ],
-        featuresParams: []
+        // featuresParamsFunctions: [
+        //     memberListController.getConstructorParams,
+        //     depositScheduler.getConstructorParams,
+        //     withdrawalController.getConstructorParams
+        // ],
+        // featuresParams: []
+        features: [
+            "memberListController",
+            "depositScheduler",
+            "withdrawalController"
+        ]
     },
     {
         id: 2,
-        name: "GraduationQuota_ERC20", 
+        name: "GraduationQuota_ERC20",
+        nativeParamsFunction: handshakeSuperClass.getConstructorParams,
+        // featuresParamsFunctions: [
+        //     memberListController.getConstructorParams,
+        //     depositScheduler.getConstructorParams,
+        //     withdrawalController.getConstructorParams
+        // ],
+        // featuresParams: []
+        features: [
+            "memberListController",
+            "depositScheduler",
+            "withdrawalController"
+        ]
     },
     {
         id: 3,
-        name: "TravelQuota_ETH", 
+        name: "TravelQuota_ETH",
+        nativeParamsFunction: handshakeSuperClass.getConstructorParams,
+        // featuresParamsFunctions: [
+        //     memberListController.getConstructorParams,
+        //     depositScheduler.getConstructorParams,
+        //     withdrawalController.getConstructorParams
+        // ],
+        // featuresParams: []
+        features: [
+            "memberListController",
+            "depositScheduler",
+            "withdrawalController"
+        ]
     },
     {
         id: 4,
-        name: "TravelQuota_ERC20", 
+        name: "TravelQuota_ERC20",
+        nativeParamsFunction: handshakeSuperClass.getConstructorParams,
+        // featuresParamsFunctions: [
+        //     memberListController.getConstructorParams,
+        //     depositScheduler.getConstructorParams,
+        //     withdrawalController.getConstructorParams
+        // ],
+        // featuresParams: []
+        features: [
+            "memberListController",
+            "depositScheduler",
+            "withdrawalController"
+        ]
     },
 ];
 
@@ -81,12 +122,12 @@ exports.getContractTemplate = ((req, res) => {
     delete response.nativeParamsFunctions;
 
     response.nativeParams = contractTemplate.nativeParamsFunction();
-    for (featureFunction of contractTemplate.featuresParamsFunctions) {
-        const featureParams = featureFunction();
-        for (param of featureParams) {
-            response.featuresParams.push(param);
-        }
-    }
+    // for (featureFunction of contractTemplate.featuresParamsFunctions) {
+    //     const featureParams = featureFunction();
+    //     for (param of featureParams) {
+    //         response.featuresParams.push(param);
+    //     }
+    // }
 
     res.status(200).json({
         contractTemplate: response
