@@ -1,24 +1,22 @@
-import { useState } from "react";
+
+//MUI
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
+//Redux Stuff:
+import { useDispatch, useSelector } from "react-redux";
+import { changeContractType } from "../../store";
 
-function ContractTypesSelect({ contractTypes, setContractType }) {
+function ContractTypesSelect({ contractTypes }) {
 
-    const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
+    //const [contractDescription, setContractDescription] = useState(contractTypes[0].description)
+    const dispatch = useDispatch();
+    const contractType = useSelector((state) => {
+        return state.contractType.contractType;
+    });
 
     function handleChange(e) {
-        const contractId = Number(e.target.value);
-        let contractType;
-
-        for (contractType of contractTypes) {
-            if (contractId === contractType.id) {
-                setContractDescription(contractType.description);
-                break;
-            }
-        }
-
-        setContractType(contractId);
+        dispatch(changeContractType(Number(e.target.value)));
     }
 
     const renderedOptions = contractTypes.map((contractType) => {
@@ -47,6 +45,7 @@ function ContractTypesSelect({ contractTypes, setContractType }) {
                     label="Type"
                     size="small"
                     onChange={handleChange} 
+                    value={contractType}
                 >
                     {renderedOptions}
                 </Select>

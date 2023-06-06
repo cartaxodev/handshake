@@ -1,10 +1,19 @@
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-function NetworkSelect({ network, setNetwork }) {
+//Redux Stuff
+import { useDispatch, useSelector } from 'react-redux';
+import { changeNetwork } from '../../store';
+
+function NetworkSelect() {
+
+    const dispatch = useDispatch();
+    const network = useSelector((state) => {
+        return state.network.network;
+    });
     
-    function handleChange(e) {
-        setNetwork(Number(e.target.value));
+    const handleChange = (e) => {
+        dispatch(changeNetwork(e.target.value));
     }
 
     return <div>

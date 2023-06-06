@@ -20,12 +20,6 @@ function MinApprovalsToWithdrawInput () {
 
     return (
         <div>
-            {/* <p>Quantas aprovações de membros da comissão são necessárias para aprovar um saque de valores do contrato?</p>
-            <input 
-                value={state} 
-                onChange={handleChange} 
-                type="number"/> */}
-
             <Typography>
                 Quantas aprovações de membros da comissão são necessárias para aprovar um saque de valores do contrato?
             </Typography>

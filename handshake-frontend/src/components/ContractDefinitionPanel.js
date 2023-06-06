@@ -19,13 +19,14 @@ function ContractDefinitionPanel ({ contractTemplate }) {
                     </div>
                 );
             }
-            if (param.name === "memberList_") {
+            else if (param.name === "memberList_") {
                 return (
                     <div>
                         <MemberList key={param.name}/>
                     </div>
                 );
             }
+            else return undefined;
         });
     }
 
@@ -38,20 +39,21 @@ function ContractDefinitionPanel ({ contractTemplate }) {
                     </div>
                 )
             }
-            if (feature === "depositScheduler") {
+            else if (feature === "depositScheduler") {
                 return (
                     <div>
                         <DepositSchedulerAccordion key={feature}/>
                     </div>
                 )
             }
-            if (feature === "withdrawalController") {
+            else if (feature === "withdrawalController") {
                 return (
                     <div>
                         <WithdrawalControllerAccordion key={feature}/>
                     </div>
                 )
             }
+            else return undefined;
         });
     }
 

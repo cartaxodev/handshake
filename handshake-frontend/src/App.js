@@ -16,9 +16,17 @@ function App() {
     const [contractTypes, setContractTypes] = useState(undefined);
 
     //States for basic params
-    const [currency, setCurrency] = useState(1);
-    const [network, setNetwork] = useState(1);
-    const [contractType, setContractType] = useState(1);
+    const network = useSelector((state) => {
+        return state.network.network;
+    });
+
+    const currency = useSelector((state) => {
+        return state.currency.currency;
+    });
+    
+    const contractType = useSelector((state) => {
+        return state.contractType.contractType;
+    });
 
     //States for contractTemplate fecthed from the API
     const [contractTemplate, setContractTemplate] = useState({});
@@ -29,6 +37,7 @@ function App() {
     }
 
     const handleDefineClausesButtonClick = async () => {
+
         const apiResponse = await api.getContractTemplate(network,
                                                         currency,
                                                         contractType);
@@ -50,11 +59,6 @@ function App() {
             </div>
             <div>
                     <BaseParamsPanel contractTypes={contractTypes}
-                                    network={network}
-                                    currency={currency}
-                                    setContractType={setContractType}
-                                    setNetwork={setNetwork}
-                                    setCurrency={setCurrency}
                                     handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
             </div>
 

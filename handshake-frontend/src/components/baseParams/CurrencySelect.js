@@ -1,10 +1,19 @@
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Select, MenuItem } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-function CurrencySelect({ currency, setCurrency }) {
+//Redux Stuff:
+import { useDispatch, useSelector } from 'react-redux';
+import { changeCurrency } from '../../store';
+
+function CurrencySelect() {
+
+    const dispatch = useDispatch();
+    const currency = useSelector((state) => {
+        return state.currency.currency;
+    });
 
     function handleChange(e) {
-        setCurrency(Number(e.target.value))
+        dispatch(changeCurrency(e.target.value));
     }
 
     return <div>

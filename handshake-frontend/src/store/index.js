@@ -9,6 +9,9 @@ import { withdrawalApproversReducer, addWithdrawalApprover, removeWithdrawalAppr
 import { maxWithdrawValueReducer, changeMaxWithdrawValue } from './slices/maxWithdrawValueSlice';
 import { deadlineControlConfigReducer, changeDeadlineControlConfig } from './slices/deadlineControlConfigSlice';
 import { depositScheduleReducer, createDepositSchedule, changeDepositScheduling } from './slices/depositScheduleSlice';
+import { networkReducer, changeNetwork } from './slices/baseParams/networkSlice';
+import { currencyReducer, changeCurrency } from './slices/baseParams/currencySlice';
+import { contractTypeReducer, changeContractType } from './slices/baseParams/contractTypeSlice';
 
 const store = configureStore({
     reducer: {
@@ -21,7 +24,10 @@ const store = configureStore({
         withdrawalApprovers: withdrawalApproversReducer,
         maxWithdrawValue: maxWithdrawValueReducer,
         deadlineControlConfig: deadlineControlConfigReducer,
-        depositSchedule: depositScheduleReducer
+        depositSchedule: depositScheduleReducer,
+        network: networkReducer,
+        currency: currencyReducer,
+        contractType: contractTypeReducer
     }
 });
 
@@ -42,5 +48,8 @@ export {
     changeMaxWithdrawValue,
     changeDeadlineControlConfig,
     createDepositSchedule,
-    changeDepositScheduling
+    changeDepositScheduling,
+    changeNetwork,
+    changeCurrency,
+    changeContractType
 };
