@@ -1,4 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { networkReducer, changeNetwork } from './slices/baseParams/networkSlice';
+import { currencyReducer, changeCurrency } from './slices/baseParams/currencySlice';
+import { contractTypeReducer, changeContractType } from './slices/baseParams/contractTypeSlice';
 import { objectiveReducer, changeObjective } from './slices/objectiveSlice';
 import { memberListReducer, addMember, removeMember, changeMemberLogin, changeMemberMainAddress } from './slices/memberListSlice';
 import { memberManagersReducer, addMemberManager, removeMemberManager } from './slices/memberManagersSlice';
@@ -9,12 +12,12 @@ import { withdrawalApproversReducer, addWithdrawalApprover, removeWithdrawalAppr
 import { maxWithdrawValueReducer, changeMaxWithdrawValue } from './slices/maxWithdrawValueSlice';
 import { deadlineControlConfigReducer, changeDeadlineControlConfig } from './slices/deadlineControlConfigSlice';
 import { depositScheduleReducer, createDepositSchedule, changeDepositScheduling } from './slices/depositScheduleSlice';
-import { networkReducer, changeNetwork } from './slices/baseParams/networkSlice';
-import { currencyReducer, changeCurrency } from './slices/baseParams/currencySlice';
-import { contractTypeReducer, changeContractType } from './slices/baseParams/contractTypeSlice';
 
 const store = configureStore({
     reducer: {
+        network: networkReducer,
+        currency: currencyReducer,
+        contractType: contractTypeReducer,
         objective: objectiveReducer,
         memberList: memberListReducer,
         memberManagers: memberManagersReducer,
@@ -24,10 +27,7 @@ const store = configureStore({
         withdrawalApprovers: withdrawalApproversReducer,
         maxWithdrawValue: maxWithdrawValueReducer,
         deadlineControlConfig: deadlineControlConfigReducer,
-        depositSchedule: depositScheduleReducer,
-        network: networkReducer,
-        currency: currencyReducer,
-        contractType: contractTypeReducer
+        depositSchedule: depositScheduleReducer
     }
 });
 

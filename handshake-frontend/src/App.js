@@ -42,9 +42,6 @@ function App() {
                                                         currency,
                                                         contractType);
         setContractTemplate(apiResponse);
-
-        //TODO -> RESETAR STORE DO REDUX
-
     }
 
     return (

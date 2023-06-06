@@ -4,7 +4,7 @@ const contractTypeSlice = createSlice({
 
     name: "contractType",
     initialState: {
-        contractType: 1
+        contractType: 0
     },
     reducers: {
         
