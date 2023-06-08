@@ -9,6 +9,13 @@ const concreteContractTemplates =
     {
         id: 1,
         name: "GraduationQuota_ETH",
+        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+                    + " necessários à realização de festa de formatura",
+        objectiveFields: [
+            "Instituição de ensino",
+            "Curso",
+            "Turma"
+        ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
         //     memberListController.getConstructorParams,
@@ -25,6 +32,13 @@ const concreteContractTemplates =
     {
         id: 2,
         name: "GraduationQuota_ERC20",
+        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+                    + " necessários à realização de festa de formatura",
+        objectiveFields: [
+            "Instituição de ensino",
+            "Curso",
+            "Turma"
+        ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
         //     memberListController.getConstructorParams,
@@ -41,6 +55,11 @@ const concreteContractTemplates =
     {
         id: 3,
         name: "TravelQuota_ETH",
+        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+                    + " necessários à realização de viagem em grupo",
+        objectiveFields: [
+            "Local"
+        ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
         //     memberListController.getConstructorParams,
@@ -57,6 +76,11 @@ const concreteContractTemplates =
     {
         id: 4,
         name: "TravelQuota_ERC20",
+        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+                    + " necessários à realização de viagem em grupo",
+        objectiveFields: [
+            "Local"
+        ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
         //     memberListController.getConstructorParams,

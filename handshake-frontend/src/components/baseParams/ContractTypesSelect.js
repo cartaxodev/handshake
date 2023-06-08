@@ -26,6 +26,13 @@ function ContractTypesSelect({ contractTypes }) {
             </MenuItem>
     });
 
+    let contractDescription;
+    for (let type of contractTypes) {
+        if (type.id === contractType) {
+            contractDescription = type.description;
+            break;
+        }
+    }
  
     return <div>
         <Accordion>
@@ -49,6 +56,10 @@ function ContractTypesSelect({ contractTypes }) {
                 >
                     {renderedOptions}
                 </Select>
+                <p/>
+                <Typography>
+                    {contractDescription}
+                </Typography>
             </AccordionDetails>
         </Accordion>
     </div>

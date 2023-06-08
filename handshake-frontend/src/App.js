@@ -8,9 +8,12 @@ import ContractDefinitionPanel from './components/ContractDefinitionPanel';
 import { Grid, Paper, Button, Typography } from '@mui/material'
 
 //Redux Stuff:
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { resetFeatureSlices } from './store';
 
 function App() {
+
+    const dispatch = useDispatch();
 
     //State for contractTypes fetched from the API
     const [contractTypes, setContractTypes] = useState(undefined);
@@ -32,6 +35,8 @@ function App() {
     const [contractTemplate, setContractTemplate] = useState({});
 
     const handleNewContractButtonClick = async () => {
+        setContractTemplate({});
+        dispatch(resetFeatureSlices());
         const apiResponse = await api.getContractTypes();
         setContractTypes(apiResponse);
     }
@@ -83,7 +88,7 @@ function App() {
                 <Grid item xs={12} md={6}>
                     <Paper elevation={1} style={{ padding: 16 }}>
                         <Typography>
-                            <p><b>CLÁUSULAS CONTRATUAIS</b></p>
+                            <p><b>TEXTO DO CONTRATO</b></p>
                         </Typography>   
                     </Paper>
                 </Grid>
