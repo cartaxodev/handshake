@@ -74,14 +74,14 @@ function App() {
                         <div>
                             <ContractDefinitionPanel contractTemplate={contractTemplate}/>
                         </div>
-                        {/* <Paper>
+                        <Paper>
                             <p>
                                 REDUX STATES:
                             </p>
                             {JSON.stringify(useSelector((state) => {
                                 return state;
                             }))}
-                        </Paper> */}
+                        </Paper>
                     </Paper>
                 </Grid>
 
