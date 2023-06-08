@@ -1,16 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { resetFeatureSlices } from "../mainSlice";
+
+const initialState = {
+    maxWithdrawValue_: 0
+};
 
 const maxWithdrawValueSlice = createSlice({
 
     name: "maxWithdrawValue",
-    initialState: {
-        maxWithdrawValue_: 0
-    },
+    initialState: initialState,
     reducers: {
         
         changeMaxWithdrawValue(state, action) {
             state.maxWithdrawValue_ = action.payload;
         }
+    },
+    extraReducers(builder) {
+        builder.addCase(resetFeatureSlices, (state, action) => {
+            state.maxWithdrawValue_ = initialState.maxWithdrawValue_;
+        })
     }
 });
 

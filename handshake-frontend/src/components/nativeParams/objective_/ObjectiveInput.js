@@ -1,13 +1,14 @@
+
+//Redux stuff:
 import { useDispatch, useSelector } from 'react-redux';
 import { changeObjective } from '../../../store';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Typography from '@mui/material/Typography';
-import { TextField } from '@mui/material';
+
+//MUI
+import { TextField, Typography, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
-function ObjectiveInput () {
+
+function ObjectiveInput ({ objectiveFields, defaultObjective }) {
 
     const dispatch = useDispatch();
     const objective = useSelector((state) => {
@@ -17,6 +18,20 @@ function ObjectiveInput () {
     const handleChange = (e) => {
         dispatch(changeObjective(e.target.value));
     }
+
+    const variableFields = objectiveFields.map((field, index) => {
+        return <div>
+                <p/>
+                <TextField
+                    variant='outlined'
+                    fullWidth
+                    size="small"
+                    label={field}
+                    //value={objective} 
+                    //onChange={handleChange} 
+                />
+            </div>
+    })
 
     return <div>
             <Accordion>
@@ -39,10 +54,15 @@ function ObjectiveInput () {
                         label="Objetivo"
                         multiline
                         rows={4}
-                        defaultValue="Default Value"
                         value={objective} 
-                        onChange={handleChange} 
+                        onChange={handleChange}
+                        disabled={!!defaultObjective}
                     />
+                    <p/>
+                    <Typography>
+                        Informe abaixo informações adicionais sobre o objetivo do contrato:
+                    </Typography>
+                    {variableFields}
                 </AccordionDetails>
             </Accordion>
         </div>

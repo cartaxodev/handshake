@@ -1,12 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { removeMember } from "./memberListSlice";
+import { resetFeatureSlices } from "../mainSlice";
+
+const initialState = {
+    withdrawalApprovers_: []
+};
 
 const withdrawalApproversSlice = createSlice({
 
     name: "withdrawalApprovers",
-    initialState: {
-        withdrawalApprovers_: []
-    },
+    initialState: initialState,
     reducers: {
 
         addWithdrawalApprover(state, action) {
@@ -20,11 +23,16 @@ const withdrawalApproversSlice = createSlice({
         }
     },
     extraReducers(builder) {
+
         builder.addCase(removeMember, (state, action) => {
             state.withdrawalApprovers_ = state.withdrawalApprovers_.filter((withdrawalApprover, index) => {
                 return withdrawalApprover !== action.payload;
             });
-        })
+        });
+
+        builder.addCase(resetFeatureSlices, (state, action) => {
+            state.withdrawalApprovers_ = initialState.withdrawalApprovers_;
+        });
     }
 });
 

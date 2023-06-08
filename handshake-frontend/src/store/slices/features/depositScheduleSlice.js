@@ -1,11 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { resetFeatureSlices } from "../mainSlice";
+
+const initialState = {
+    depositSchedule_: []
+};
 
 const depositScheduleSlice = createSlice({
 
     name: "depositSchedule",
-    initialState: {
-        depositSchedule_: []
-    },
+    initialState: initialState,
     reducers: {
 
         createDepositSchedule(state, action) {
@@ -23,6 +26,11 @@ const depositScheduleSlice = createSlice({
         changeDepositScheduling(state, action) {
             state.depositSchedule_[action.payload.index] = action.payload.scheduling;
         }
+    },
+    extraReducers(builder) {
+        builder.addCase(resetFeatureSlices, (state, action) => {
+            state.depositSchedule_ = initialState.depositSchedule_;
+        })
     }
 });
 

@@ -3,14 +3,14 @@ const contractTypes =
 [
     {
         id: 1,
-        name: "Graduation Quota", 
-        description: "Management of all financial aspects of a graduation celebration",
+        name: "Cota de formatura", 
+        description: "Template de contrato de gestão financeira para realização de festa de formatura",
         source: "/concrete/GraduationQuota"
     },
     {
         id: 2,
-        name: "Travel Quota", 
-        description: "Management of all financial aspects of a group travel planning",
+        name: "Cota de viagem", 
+        description: "Template de contrato de gestão financeira para planejamento e realização de viagem em grupo",
         source: "/concrete/TravelQuota"
     },
 ];

@@ -1,13 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { resetFeatureSlices } from "../mainSlice";
 
 let memberIdCounter = 0;
+
+const initialState = {
+    memberList_: []
+};
 
 const memberListSlice = createSlice({
 
     name: "memberList",
-    initialState: {
-        memberList_: []
-    },
+    initialState: initialState,
     reducers: {
 
         addMember(state, action) {
@@ -38,6 +41,11 @@ const memberListSlice = createSlice({
                 }
             }
         }
+    },
+    extraReducers(builder) {
+        builder.addCase(resetFeatureSlices, (state, action) => {
+            state.memberList_ = initialState.memberList_;
+        });
     }
 });
 

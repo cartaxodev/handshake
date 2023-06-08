@@ -4,8 +4,14 @@ import MemberListControllerAccordion from './features/memberListController/Membe
 import DepositSchedulerAccordion from './features/depositScheduler/DepositSchedulerAccordion';
 import WithdrawalControllerAccordion from './features/withdrawalController/WithdrawalControllerAccordion';
 
+//Redux
+import { useDispatch } from 'react-redux';
+import { changeObjective } from '../store';
+
 
 function ContractDefinitionPanel ({ contractTemplate }) {
+
+    const dispatch = useDispatch();
 
     let nativeParamsComponents;
     let featuresComponents;
@@ -13,9 +19,18 @@ function ContractDefinitionPanel ({ contractTemplate }) {
     if (contractTemplate.nativeParams) {
         nativeParamsComponents = contractTemplate.nativeParams.map((param, index) => {
             if (param.name === "objective_") {
+
+                if (contractTemplate.description) {
+                    dispatch(changeObjective(contractTemplate.description));
+                }
+                
                 return (
                     <div>
-                        <ObjectiveInput key={param.name}/>
+                        <ObjectiveInput 
+                            key={param.name}
+                            objectiveFields={contractTemplate.objectiveFields}
+                            defaultObjective={contractTemplate.description}
+                            />
                     </div>
                 );
             }
