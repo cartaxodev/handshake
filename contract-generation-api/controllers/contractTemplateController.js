@@ -9,12 +9,12 @@ const concreteContractTemplates =
     {
         id: 1,
         name: "GraduationQuota_ETH",
-        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+        description: "Gestão coletiva dos recursos financeiros"
                     + " necessários à realização de festa de formatura",
-        objectiveFields: [
+        objectiveSubFields: [
             "Instituição de ensino",
             "Curso",
-            "Turma"
+            "Turma/Período"
         ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
@@ -24,20 +24,29 @@ const concreteContractTemplates =
         // ],
         // featuresParams: []
         features: [
-            "memberListController",
-            "depositScheduler",
-            "withdrawalController"
+            {
+                name: "memberListController",
+                version: "v0",
+            },
+            {
+                name: "depositScheduler",
+                version: "v0",
+            },
+            {
+                name: "withdrawalController",
+                version: "v0",
+            }
         ]
     },
     {
         id: 2,
         name: "GraduationQuota_ERC20",
-        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+        description: "Gestão coletiva dos recursos financeiros"
                     + " necessários à realização de festa de formatura",
-        objectiveFields: [
+        objectiveSubFields: [
             "Instituição de ensino",
             "Curso",
-            "Turma"
+            "Turma/Período"
         ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
         // featuresParamsFunctions: [
@@ -47,17 +56,26 @@ const concreteContractTemplates =
         // ],
         // featuresParams: []
         features: [
-            "memberListController",
-            "depositScheduler",
-            "withdrawalController"
+            {
+                name: "memberListController",
+                version: "v0",
+            },
+            {
+                name: "depositScheduler",
+                version: "v0",
+            },
+            {
+                name: "withdrawalController",
+                version: "v0",
+            }
         ]
     },
     {
         id: 3,
         name: "TravelQuota_ETH",
-        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+        description: "Gestão coletiva dos recursos financeiros"
                     + " necessários à realização de viagem em grupo",
-        objectiveFields: [
+        objectiveSubFields: [
             "Local"
         ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
@@ -68,17 +86,26 @@ const concreteContractTemplates =
         // ],
         // featuresParams: []
         features: [
-            "memberListController",
-            "depositScheduler",
-            "withdrawalController"
+            {
+                name: "memberListController",
+                version: "v0",
+            },
+            {
+                name: "depositScheduler",
+                version: "v0",
+            },
+            {
+                name: "withdrawalController",
+                version: "v0",
+            }
         ]
     },
     {
         id: 4,
         name: "TravelQuota_ERC20",
-        description: "Este contrato tem como objeto a gestão coletiva dos recursos financeiros"
+        description: "Gestão coletiva dos recursos financeiros"
                     + " necessários à realização de viagem em grupo",
-        objectiveFields: [
+        objectiveSubFields: [
             "Local"
         ],
         nativeParamsFunction: handshakeSuperClass.getConstructorParams,
@@ -89,9 +116,18 @@ const concreteContractTemplates =
         // ],
         // featuresParams: []
         features: [
-            "memberListController",
-            "depositScheduler",
-            "withdrawalController"
+            {
+                name: "memberListController",
+                version: "v0",
+            },
+            {
+                name: "depositScheduler",
+                version: "v0",
+            },
+            {
+                name: "withdrawalController",
+                version: "v0",
+            }
         ]
     },
 ];

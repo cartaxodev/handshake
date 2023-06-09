@@ -2,7 +2,8 @@ import React from 'react';
 import api from './api';
 import { useState } from 'react';
 import BaseParamsPanel from './components/BaseParamsPanel';
-import ContractDefinitionPanel from './components/ContractDefinitionPanel';
+import ContractDefinitionPanel from './components/contractDefinition/ContractDefinitionPanel';
+import ContractTextPanel from './components/contractExhibition/ContractTextPanel';
 
 //MUI Stuff:
 import { Grid, Paper, Button, Typography } from '@mui/material'
@@ -74,23 +75,19 @@ function App() {
                         <div>
                             <ContractDefinitionPanel contractTemplate={contractTemplate}/>
                         </div>
-                        <Paper>
+                        {/* <Paper>
                             <p>
                                 REDUX STATES:
                             </p>
                             {JSON.stringify(useSelector((state) => {
                                 return state;
                             }))}
-                        </Paper>
+                        </Paper> */}
                     </Paper>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                    <Paper elevation={1} style={{ padding: 16 }}>
-                        <Typography>
-                            <p><b>TEXTO DO CONTRATO</b></p>
-                        </Typography>   
-                    </Paper>
+                        <ContractTextPanel contractTemplate={contractTemplate} />
                 </Grid>
             </Grid>
         </div>
