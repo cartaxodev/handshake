@@ -12,6 +12,11 @@ import { Grid, Paper, Button, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux';
 import { resetFeatureSlices } from './store';
 
+//DateTime libs
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+
+
 function App() {
 
     const dispatch = useDispatch();
@@ -51,46 +56,48 @@ function App() {
     }
 
     return (
-        <div>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
             <div>
-                <Button 
-                    variant="contained" 
-                    size="small"
-                    onClick={handleNewContractButtonClick}>
-                        Elaborar Novo Contrato
-                </Button>
-            </div>
-            <div>
-                    <BaseParamsPanel contractTypes={contractTypes}
-                                    handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
-            </div>
+                <div>
+                    <Button 
+                        variant="contained" 
+                        size="small"
+                        onClick={handleNewContractButtonClick}>
+                            Elaborar Novo Contrato
+                    </Button>
+                </div>
+                <div>
+                        <BaseParamsPanel contractTypes={contractTypes}
+                                        handleDefineClausesButtonClick={handleDefineClausesButtonClick} />
+                </div>
 
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={1} style={{ padding: 16 }}>
-                        <Typography>
-                            <p><b>DEFINIÇÃO DE REGRAS</b></p>
-                        </Typography>
-                        
-                        <div>
-                            <ContractDefinitionPanel contractTemplate={contractTemplate}/>
-                        </div>
-                        {/* <Paper>
-                            <p>
-                                REDUX STATES:
-                            </p>
-                            {JSON.stringify(useSelector((state) => {
-                                return state;
-                            }))}
-                        </Paper> */}
-                    </Paper>
-                </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                        <Paper elevation={1} style={{ padding: 16 }}>
+                            <Typography>
+                                <p><b>DEFINIÇÃO DE REGRAS</b></p>
+                            </Typography>
+                            
+                            <div>
+                                <ContractDefinitionPanel contractTemplate={contractTemplate}/>
+                            </div>
+                            {/* <Paper>
+                                <p>
+                                    REDUX STATES:
+                                </p>
+                                {JSON.stringify(useSelector((state) => {
+                                    return state;
+                                }))}
+                            </Paper> */}
+                        </Paper>
+                    </Grid>
 
-                <Grid item xs={12} md={6}>
-                        <ContractTextPanel contractTemplate={contractTemplate} />
+                    <Grid item xs={12} md={6}>
+                            <ContractTextPanel contractTemplate={contractTemplate} />
+                    </Grid>
                 </Grid>
-            </Grid>
-        </div>
+            </div>
+        </LocalizationProvider>
     );
 }
 

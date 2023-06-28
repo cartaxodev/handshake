@@ -19,7 +19,7 @@ function ObjectiveClauses({ clauses, recalcNumberOfClauses }) {
             </Typography>
             <Typography>
                 <p/>
-                <b>CLÁUSULA ${clausesNumbers.paramClausesNumbers[0]}: </b>{`O objetivo deste contrato é realizar o/a ${objective};`}
+                <b>CLÁUSULA {clausesNumbers.paramClausesNumbers[0]}: </b>{`O objetivo deste contrato é realizar o/a ${objective};`}
             </Typography>
         </div>
 

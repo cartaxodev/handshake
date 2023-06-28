@@ -1,12 +1,11 @@
+import dayjs from "dayjs";
 import { useDispatch } from "react-redux";
 import { changeDepositScheduling } from "../../../../../store";
 
 //MUI
-import { Card, Typography, Input } from '@mui/material'
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
+import { Card, Typography, TextField } from '@mui/material'
+//import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 function DepositSchedulingForm ({ index, scheduling }) {
 
@@ -25,8 +24,9 @@ function DepositSchedulingForm ({ index, scheduling }) {
         }
     }
 
-    const handleDeadlineChange = (e) => {
-        const deadline = e.target.value;
+    const handleDeadlineChange = (newValue) => {
+        const deadline = newValue.unix();
+        console.log(deadline);
         if(!isNaN(deadline)) {
             dispatch(changeDepositScheduling({
                 index: index,
@@ -47,35 +47,24 @@ function DepositSchedulingForm ({ index, scheduling }) {
                     </Typography>    
                 </div>
                 <div>
-                    <Typography>
-                        Valor:
-                    </Typography>
-                    <Input
+                    <p/>
+                    <TextField
                         variant='outlined'
                         size="small"
-                        label="Value"
+                        label="Valor"
                         value={scheduling._value} 
                         onChange={handleValueChange} 
                         type="number"
                     />
                 </div>
                 <div>
-                    <Typography>
-                        Deadline:
-                    </Typography>
-
-                    <Typography color="red">
-                        INCLUIR AQUI UM COMPONENTE DE DATA QUE FUNCIONE
-                    </Typography>
-                    
-
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={['DateTimePicker']}>
-                            <DateTimeField label="Basic date time field"
-                                //value={scheduling._deadlineTimestamp} 
-                                onChange={handleDeadlineChange}  />
-                        </DemoContainer>
-                    </LocalizationProvider>
+                    <p/>
+                    <DateTimePicker
+                        label="Deadline"
+                        value={dayjs.unix(scheduling._deadlineTimestamp)}
+                        onChange={(newValue) => handleDeadlineChange(newValue)}
+                    />
+                    <p/>
                 </div>
             </Card>
         </div>    

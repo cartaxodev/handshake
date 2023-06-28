@@ -26,7 +26,7 @@ function MemberListClauses({ clauses, recalcNumberOfClauses }) {
             </Typography>
             <Typography>
                 <p/>
-                <b>CLÁUSULA ${clausesNumbers.paramClausesNumbers[0]}: </b>{`São membros do contrato os donos das WALLETS abaixo listadas, identificados neste contrato pelos LOGINS correspondentes:`}
+                <b>CLÁUSULA {clausesNumbers.paramClausesNumbers[0]}: </b>{`São membros do contrato os donos das WALLETS abaixo listadas, identificados neste contrato pelos LOGINS correspondentes:`}
             </Typography>
             {renderedMembers}
             <Typography>
