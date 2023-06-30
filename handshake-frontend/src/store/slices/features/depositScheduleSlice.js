@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { resetFeatureSlices } from "../mainSlice";
+import dayjs from "dayjs";
 
 const initialState = {
     depositSchedule_: []
@@ -16,7 +17,7 @@ const depositScheduleSlice = createSlice({
             for (let i = 0; i < action.payload; i++) {
                 schedulings.push({
                     _value: 0,
-                    _deadlineTimestamp: 0,
+                    _deadlineTimestamp: (new dayjs()).unix(),
                     _executionInfo: {}
                 });
             }

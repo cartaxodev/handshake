@@ -3,6 +3,8 @@ import { useState } from "react";
 import ObjectiveClauses from "./nativeParams/ObjectiveClauses";
 import MemberListClauses from "./nativeParams/MemberListClauses";
 import MemberListControllerClauses from "./features/MemberListControllerClauses";
+import DepositSchedulerClauses from "./features/DepositSchedulerClauses";
+import WithdrawalControllerClauses from "./features/WithdrawalControllerClauses";
 
 //MUI
 import { Typography, Paper, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
@@ -23,6 +25,16 @@ const initialClauses = [
         param: "memberListController",
         numClauses: 2,
         paramClausesNumbers: [3, 4]
+    },
+    {
+        param: "depositScheduler",
+        numClauses: 2,
+        paramClausesNumbers: [5, 6]
+    },
+    {
+        param: "withdrawalController",
+        numClauses: 2,
+        paramClausesNumbers: [7, 8]
     }
 ]
 
@@ -100,20 +112,26 @@ function ContractTextPanel({ contractTemplate }) {
                         clauses={clauses}
                         recalcNumberOfClauses={recalcNumberOfClauses}/>
                     </div>
-                )
+                );
             }
             else if (feature.name === "depositScheduler") {
-                return ( ""
-                    // <div>
-                    //     <DepositSchedulerClauses key={feature.name}/>
-                    // </div>
-                )
+                return (
+                    <div>
+                        <DepositSchedulerClauses 
+                            key={feature.name}
+                            clauses={clauses}
+                            recalcNumberOfClauses={recalcNumberOfClauses}/>
+                    </div>
+                );
             }
             else if (feature.name === "withdrawalController") {
-                return ( ""
-                    // <div>
-                    //     <WithdrawalControllerClauses key={feature.name}/>
-                    // </div>
+                return (
+                    <div>
+                        <WithdrawalControllerClauses 
+                            key={feature.name}
+                            clauses={clauses}
+                            recalcNumberOfClauses={recalcNumberOfClauses}/>
+                    </div>
                 )
             }
             else return undefined;
